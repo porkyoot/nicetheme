@@ -25,9 +25,9 @@ class button(ui.button):
             self.classes('nt-btn-rotate')
             self.on('click', lambda: self.classes(toggle='nt-btn-rotated'))
 
-class select_button(ui.button):
+class select_button(ui.element):
     """
-    A button styled exactly like a Select component.
+    A button styled exactly like a Select component (using q-field).
     Useful for triggering menus or other interactions while maintaining the Select visual language.
     Contains logic for toggling the chevron rotation.
     """
@@ -37,77 +37,57 @@ class select_button(ui.button):
                  icon_right: str = 'arrow_drop_down', 
                  icon_only: bool = False, 
                  custom_icon_builder: Optional[Callable] = None,
+                 on_click: Optional[Callable] = None,
                  *args, **kwargs):
         
-        # Default color to transparent so our CSS background takes over
-        kwargs.setdefault('color', 'transparent')
+        super().__init__('q-field', *args, **kwargs)
         
+        self.classes('cursor-pointer nt-select-button')
+        self.props('borderless' if kwargs.get('borderless') else '') # Allow borderless override
+        
+        # Ensure label text doesn't float into the label position, but sits in the control (value) slot
+        self._label_text = label
         self._icon_only = icon_only
-        self._original_label = label
         self._custom_icon_builder = custom_icon_builder
-        
-        self._custom_label_element = None
-        self._icon_container = None
-        
-        # If using a custom builder, we suppress the default label to render it manually
-        display_text = '' if (icon_only or custom_icon_builder) else label
-        
-        # Don't pass icon to super if using custom builder
-        super_icon = icon if not custom_icon_builder else None
-        
-        super().__init__(text=display_text, icon=super_icon, *args, **kwargs)
-        
-        # Apply strict styling classes
-        self.classes('nt-select-button')
-        
-        if icon_only:
-            self.classes('nt-mode-icon-only')
-        
-        # Structure the button to allow space-between alignment
-        # unelevated, no-caps are now global defaults but keeping here doesn't hurt if we want to be explicit
-        self.props(f'align="between" icon-right="{icon_right}"')
         
         # Internal state for rotation
         self._is_rotated = False
-        
-        # Bind click to toggle
-        self.on('click', self.toggle_rotation)
-        
-        # Insert Custom Icon if provided
-        if self._custom_icon_builder:
-            self.style('overflow: visible')
-            
-            with self:
-                with ui.element('div').classes('row no-wrap items-center gap-2').style('overflow: visible'):
-                    # Icon Container
-                    self._icon_container = ui.element('div').classes('on-left flex flex-center order-first').style('overflow: visible')
-                    with self._icon_container:
-                         self._custom_icon_builder()
-                    
-                    # Manual Label
-                    if not icon_only:
-                        self._custom_label_element = ui.label(label)
 
-    def refresh(self):
-        """Re-renders the custom icon content if a builder is present."""
-        if self._custom_icon_builder and self._icon_container:
-            self._icon_container.clear()
-            with self._icon_container:
-                self._custom_icon_builder()
+        # Build Slots
+        self._update_slots(icon, icon_right)
+        
+        # Bind click - q-field has a native click event we can capture on the element
+        # We wrap the on_click to allow rotation toggling
+        if on_click:
+            self.on('click', lambda e: (self.toggle_rotation(), on_click(e)))
+        else:
+             self.on('click', self.toggle_rotation)
+
+    def _update_slots(self, icon, icon_right):
+        # Main Content (Icon + Label)
+        # We place both in 'control' slot to match the behavior of selected-item in ui.select
+        # This ensures the icon has full opacity/color like the text, not the washed out 'prepend' style
+        with self.add_slot('control'):
+            with ui.element('div').classes('q-field__native row items-center gap-2'):
+                if icon:
+                    ui.icon(icon, size='sm')
+                if self._label_text:
+                    self._label_element = ui.label(self._label_text)
+                    
+        # Custom Icon Builder (Usually for complex icons on the left/center)
+        if self._custom_icon_builder:
+             with self.add_slot('prepend'): # Keep custom builder in prepend for now unless specified otherwise
+                  self._custom_icon_builder()
+        
+        # Append Icon (Dropdown arrow)
+        if icon_right:
+            with self.add_slot('append'):
+                self._icon_right_element = ui.icon(icon_right).classes('transition-transform duration-300')
 
     def set_label(self, text: str):
-        self._original_label = text
-        if self._icon_only:
-            return
-            
-        if self._custom_label_element:
-            self._custom_label_element.text = text
-        else:
-            self.text = text
-        
-    def set_icon(self, icon: Optional[str]):
-        if not self._custom_icon_builder:
-            self.icon = icon
+        self._label_text = text
+        if hasattr(self, '_label_element'):
+            self._label_element.text = text
 
     def toggle_rotation(self):
         """Toggles the rotation state of the right icon."""
@@ -120,7 +100,8 @@ class select_button(ui.button):
         self._update_rotation_class()
         
     def _update_rotation_class(self):
-        if self._is_rotated:
-            self.classes(add='nt-state-rotated')
-        else:
-            self.classes(remove='nt-state-rotated')
+        if hasattr(self, '_icon_right_element'):
+            if self._is_rotated:
+                self._icon_right_element.classes('rotate-180')
+            else:
+                self._icon_right_element.classes(remove='rotate-180')

@@ -1,13 +1,42 @@
-primary: "#b58900"
-secondary: "#cb4b16"
-content: ["#586e75", "#657b83"]
-surface: ["#fdf6e3", "#eee8d5", "#93a1a1"]
-positive: "#859900"
-negative: "#dc322f"
-warning: "#b58900"
-info: "#268bd2"
-debug: "#d33682"
-inative: "#93a1a1"
-colors: 
-  blue: "#268bd2"
-custom_colors: {}
+palette:
+  name: solarized
+  colors: 
+    blue:      "#268bd2"
+    cyan:      "#2aa198"
+    green:     "#859900"
+    yellow:    "#b58900"
+    orange:    "#cb4b16"
+    red:       "#dc322f"
+    magenta:   "#d33682"
+    violet:    "#6c71c4"
+    
+  custom_colors: 
+    base03:    "#002b36"
+    base02:    "#073642"
+    base01:    "#586e75"
+    base00:    "#657b83"
+    base0:     "#839496"
+    base1:     "#93a1a1"
+    base2:     "#eee8d5"
+    base3:     "#fdf6e3"
+
+  primary: blue #named colors
+  secondary: orange
+  positive: green
+  negative: red
+  warning: yellow
+  info: blue
+  debug: base00
+  inative: base0
+  
+  dark: #inherit from the base colors
+    content: [base3, base2]
+    surface: [base03, base02, base01]
+    shadow: base3
+    highlight: base3
+    border: base0
+  light: # inherit from the dark for undefined fields
+    content: [base03, base02]
+    surface: [base3, base2, base1]
+    shadow: base03
+    border: base00

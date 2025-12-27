@@ -1,7 +1,5 @@
-shadow: "#000000"
 shadow_intensity: 0.2
-highlight: "#FFFFFF"
 highlight_intensity: 0.8
-opacity: 0.9
+opacity: 0.8
 border_width: 1.0
 css: ".frosted { backdrop-filter: blur(10px); }"
