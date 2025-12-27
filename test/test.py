@@ -20,19 +20,31 @@ def get_default_theme() -> Theme:
     # Palette
     if registry.palettes:
         # Pick one if available, prefer 'solarized' if it exists to match previous context or just the first
-        palette = registry.palettes.get('solarized') or next(iter(registry.palettes.values()))
+        palettes = registry.palettes.get('solarized') or next(iter(registry.palettes.values()))
     else:
-        palette = Palette(
-            primary="#007bff", secondary="#6c757d", content=["#212529"], surface=["#ffffff"],
+        light_palette = Palette(
+            name="default", mode="light",
+            primary="#007bff", secondary="#6c757d",
             positive="#28a745", negative="#dc3545", warning="#ffc107", info="#17a2b8", debug="#f8f9fa",
-            inative="#adb5bd", colors={}, custom_colors={}
+            inative="#adb5bd", colors={}, custom_colors={},
+            content=["#000000", "#333333"], surface=["#ffffff", "#f8f9fa"],
+            shadow="#000000", highlight="#ffffff", border="#e0e0e0"
         )
+        dark_palette = Palette(
+            name="default", mode="dark",
+            primary="#007bff", secondary="#6c757d",
+            positive="#28a745", negative="#dc3545", warning="#ffc107", info="#17a2b8", debug="#f8f9fa",
+            inative="#adb5bd", colors={}, custom_colors={},
+            content=["#ffffff", "#e0e0e0"], surface=["#121212", "#1e1e1e"],
+            shadow="#000000", highlight="#333333", border="#444444"
+        )
+        palettes = {'light': light_palette, 'dark': dark_palette}
 
     # Texture
     if registry.textures:
         texture = registry.textures.get('frosted_glass') or next(iter(registry.textures.values()))
     else:
-        texture = Texture(shadow="#000000", shadow_intensity=0.1, highlight="#ffffff", highlight_intensity=0.2, opacity=1.0, border_width=1.0, css="")
+        texture = Texture(shadow_intensity=0.1, highlight_intensity=0.2, opacity=1.0, border_width=1.0, css="")
 
     # Layout
     if registry.layouts:
@@ -43,7 +55,7 @@ def get_default_theme() -> Theme:
     # Typography (Manual as it's not scanned fully)
     typography = Typography(primary="Roboto", secondary="sans-serif", scale=1.0, title_case="title_case")
 
-    return Theme(palette=palette, texture=texture, layout=layout, typography=typography)
+    return Theme(palettes=palettes, texture=texture, layout=layout, typography=typography)
 
 theme = get_default_theme()
 manager.apply(theme)

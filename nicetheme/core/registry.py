@@ -16,7 +16,7 @@ class ThemeRegistry:
             # Assuming this file is in nicetheme/core/registry.py, go up two levels
             self.themes_dir = Path(__file__).parent.parent / "themes"
         
-        self.palettes: Dict[str, Palette] = {}
+        self.palettes: Dict[str, Dict[str, Palette]] = {}
         self.textures: Dict[str, Texture] = {}
         self.layouts: Dict[str, Layout] = {}
         self.fonts: Dict[str, str] = {} # Name -> Relative Path or URL
@@ -41,9 +41,38 @@ class ThemeRegistry:
             try:
                 with open(file, "r") as f:
                     data = yaml.safe_load(f)
-                    # Basic validation/mapping could go here. 
-                    # Ideally we use dacite or pydantic, but simple dict unfolding works for now if keys match.
-                    self.palettes[file.stem] = Palette(**data)
+                    
+                    # Handle 'palette' root key if present
+                    if 'palette' in data:
+                        data = data['palette']
+                    
+                    # Extract common and specific fields
+                    common = data.copy()
+                    dark_spec = common.pop('dark', {})
+                    light_spec = common.pop('light', {})
+                    
+                    # Create Dark Palette
+                    # Merge logic: dark_spec overrides common
+                    dark_data = common.copy()
+                    dark_data.update(dark_spec)
+                    dark_data['mode'] = 'dark'
+                    dark_palette = Palette(**dark_data)
+                    
+                    # Create Light Palette
+                    # Merge logic: light_spec overrides (common merged with dark??)
+                    # YAML said: "light: inherit from the dark for undefined fields"
+                    # So Light Base = Dark Data (which is Common + Dark Overrides)
+                    light_data = dark_data.copy()
+                    # We need to remove 'mode' before update or overwrite it later
+                    # Update with light spec
+                    light_data.update(light_spec)
+                    light_data['mode'] = 'light'
+                    light_palette = Palette(**light_data)
+
+                    self.palettes[file.stem] = {
+                        'light': light_palette,
+                        'dark': dark_palette
+                    }
             except Exception as e:
                 print(f"Error loading palette {file.name}: {e}")
 

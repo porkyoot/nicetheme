@@ -1,34 +1,53 @@
-import enum
 from dataclasses import dataclass, field
 from typing import Literal, Dict, List, Optional
 
+
+
 @dataclass
 class Palette:
+    name: str
+    mode: Literal["light", "dark"]
+    colors: Dict[str, str]
+    custom_colors: Dict[str, str]
+    
     primary: str
     secondary: str
-    content: List[str] #accent then darker
-    surface: List[str] #dark_page, dark then lighter
-    positive: str #success
-    negative: str #error
-    warning: str #warning
-    info: str #info
-    debug: str #debug
-
-    #Custom Colors
-    inative: str # grey
-    colors: Dict[str, str] #must define at least one color for each of blue, cyan, green, yellow, orange, red, magenta, violet
-    custom_colors: Dict[str, List[str]] #name -> colors by order of lightness for a given hue
+    positive: str
+    negative: str
+    warning: str
+    info: str
+    debug: str
+    inative: str
     
+    content: List[str]
+    surface: List[str]
+    shadow: str
+    highlight: str
+    border: str
+
+    def resolve_color(self, color_ref: str) -> str:
+        """Resolves a color reference (name) to a hex code or value."""
+        if not color_ref: return ""
+        if color_ref.startswith("#") or color_ref.startswith("rgb") or color_ref.startswith("hsl"): 
+            return color_ref
+        
+        # Check standard colors
+        if color_ref in self.colors:
+            return self.colors[color_ref]
+            
+        # Check custom colors
+        if color_ref in self.custom_colors:
+            return self.custom_colors[color_ref]
+            
+        return color_ref # Fallback if not found
+
 @dataclass
 class Texture:
-    shadow: str
     shadow_intensity: float
-    highlight: str
     highlight_intensity: float
     opacity: float
     border_width: float
-    
-    css: str # see quasar styling for details ?
+    css: str = ""
 
 @dataclass
 class Layout:
@@ -40,11 +59,15 @@ class Typography:
     primary: str
     secondary: str
     scale: float
-    title_case: Literal["lowercase", "title_case", "uppercase"] # + None for no modifications
+    title_case: Literal["lowercase", "title_case", "uppercase", "none"]
 
 @dataclass
 class Theme:
-    palette: Palette
+    palettes: Dict[str, Palette]
     texture: Texture
     layout: Layout
     typography: Typography
+
+    @property
+    def palette(self) -> Palette:
+        return self.palettes.get('light') or next(iter(self.palettes.values()))

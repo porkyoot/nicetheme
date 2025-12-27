@@ -27,8 +27,9 @@ class palette_icon(ui.element):
         super().__init__('svg')
         
         # Extract colors from the palette (which now includes semantics)
-        background_color = palette.surface[0]
-        foreground_color = palette.content[0]
+        # Defaulting to light mode for icon representation
+        background_color = palette.resolve_color(palette.surface[0])
+        foreground_color = palette.resolve_color(palette.content[0])
         colors = palette.colors
         
         # Set SVG attributes
@@ -131,8 +132,8 @@ class palette_icon(ui.element):
     @staticmethod
     def to_html(palette: Palette, *, size: str = "24px", circular: bool = True) -> str:
         """Returns the full HTML (SVG) string for this component."""
-        background_color = palette.surface[0]
-        foreground_color = palette.content[0]
+        background_color = palette.resolve_color(palette.surface[0])
+        foreground_color = palette.resolve_color(palette.content[0])
         colors = palette.colors
         
         content = palette_icon._generate_content(background_color, foreground_color, colors)
@@ -172,8 +173,11 @@ class texture_icon(ui.element):
         
         # shadow_intensity is now just a float on Texture, check if > 0
         if texture.shadow_intensity > 0:
-            # Get shadow color from texture
-            r, g, b = hex_to_rgb(texture.shadow)
+            # Get shadow color from texture -> from palette
+            shadow_ref = palette.shadow
+            shadow_hex = palette.resolve_color(shadow_ref)
+            r, g, b = hex_to_rgb(shadow_hex)
+            
             # Calculate actual shadow based on intensity
             si = texture.shadow_intensity
             
@@ -253,7 +257,9 @@ class texture_icon(ui.element):
         
         # Calculate shadow directly from texture intensity  
         if texture.shadow_intensity > 0:
-            r, g, b = hex_to_rgb(texture.shadow)
+            shadow_ref = palette.shadow
+            shadow_hex = palette.resolve_color(shadow_ref)
+            r, g, b = hex_to_rgb(shadow_hex)
             si = texture.shadow_intensity
 
             # Calculate size factor for the shadow (base 24px)
@@ -312,7 +318,7 @@ class texture_icon(ui.element):
         # The circle div
         # Using texture.css if present
         css_cls = texture.css if texture.css else ""
-        circle_html = f'<div class="{circle_classes} {css_cls}" style="{circle_style}">{gloss_html}</div>'
+        circle_html = f'<div class="nt-texture-icon__circle {css_cls}" style="{circle_style}">{gloss_html}</div>'
         
         return f'<div class="nt-texture-icon" style="{wrapper_style}">{circle_html}</div>'
 
@@ -340,8 +346,11 @@ class theme_icon(ui.element):
         # Calculate shadow directly from texture intensity and apply to wrapper (like texture_icon)
         wrapper_style = f'width: {size}; height: {size};'
         if texture.shadow_intensity > 0:
-            # Get shadow color from texture
-            r, g, b = hex_to_rgb(texture.shadow)
+            # Get shadow color from texture -> from palette
+            shadow_ref = palette.shadow
+            shadow_hex = palette.resolve_color(shadow_ref)
+            r, g, b = hex_to_rgb(shadow_hex)
+            
             # Calculate actual shadow based on intensity
             si = texture.shadow_intensity
             
@@ -423,8 +432,11 @@ class theme_icon(ui.element):
         wrapper_style = f'width: {size}; height: {size};'
         
         # Calculate shadow directly from texture intensity and apply to wrapper
+        # Calculate shadow directly from texture intensity and apply to wrapper
         if texture.shadow_intensity > 0:
-            r, g, b = hex_to_rgb(texture.shadow)
+            shadow_ref = palette.shadow
+            shadow_hex = palette.resolve_color(shadow_ref)
+            r, g, b = hex_to_rgb(shadow_hex)
             si = texture.shadow_intensity
 
             # Calculate size factor for the shadow (base 24px)
@@ -445,6 +457,7 @@ class theme_icon(ui.element):
                 shadow_def = f'0 {3*sf:.1f}px {4*sf:.1f}px rgba({r}, {g}, {b}, {0.3 * si:.2f})'
             else:
                 shadow_def = f'0 {1*sf:.1f}px {2*sf:.1f}px rgba({r}, {g}, {b}, {0.3 * si:.2f})'
+            
             wrapper_style += f' filter: drop-shadow({shadow_def});'
         
         # Texture styling

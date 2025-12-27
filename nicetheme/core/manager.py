@@ -12,72 +12,93 @@ class ThemeManager:
         """
         Applies the given theme to the application.
         """
-        self._apply_palette(theme.palette)
-        self._apply_texture(theme.texture)
+        self._apply_palettes(theme.palettes)
+        self._apply_texture(theme.texture, theme.palette) # Pass palette for resolving texture colors
         self._apply_layout(theme.layout)
         self._apply_typography(theme.typography)
         self._inject_static_styles()
 
-    def _apply_palette(self, palette: Palette):
+    def _apply_palettes(self, palettes: Dict[str, Palette]):
+        # Determine base palette for global Quasar config (prefer light)
+        base_palette = palettes.get('light') or next(iter(palettes.values()))
+        
         # 1. Update Quasar/NiceGUI brand colors
+        # Use resolve_color method from Palette
         ui.colors(
-            primary=palette.primary,
-            secondary=palette.secondary,
-            positive=palette.positive,
-            negative=palette.negative,
-            warning=palette.warning,
-            info=palette.info,
-            accent=palette.content[0] if palette.content else palette.primary, # Fallback/Mapping
+            primary=base_palette.resolve_color(base_palette.primary),
+            secondary=base_palette.resolve_color(base_palette.secondary),
+            positive=base_palette.resolve_color(base_palette.positive),
+            negative=base_palette.resolve_color(base_palette.negative),
+            warning=base_palette.resolve_color(base_palette.warning),
+            info=base_palette.resolve_color(base_palette.info),
+            accent=base_palette.resolve_color(base_palette.content[0]) if base_palette.content else base_palette.resolve_color(base_palette.primary),
         )
 
-        # 2. Generate CSS variables for the palette
-        css_vars = []
-        
-        # Brand colors
-        css_vars.append(f"--nt-primary: {palette.primary};")
-        css_vars.append(f"--nt-secondary: {palette.secondary};")
-        css_vars.append(f"--nt-positive: {palette.positive};")
-        css_vars.append(f"--nt-negative: {palette.negative};")
-        css_vars.append(f"--nt-warning: {palette.warning};")
-        css_vars.append(f"--nt-info: {palette.info};")
-        
-        # Surface colors
-        # Assuming list format: [page, dark, light]
-        if len(palette.surface) >= 1:
-            css_vars.append(f"--nt-surface-page: {palette.surface[0]};")
-        if len(palette.surface) >= 2:
-            css_vars.append(f"--nt-surface-dark: {palette.surface[1]};")
-        if len(palette.surface) >= 3:
-            css_vars.append(f"--nt-surface-light: {palette.surface[2]};")
+        css_styles = []
 
-        # Content colors
-        # Assuming list format: [accent, darker]
-        if len(palette.content) >= 1:
-            css_vars.append(f"--nt-content-accent: {palette.content[0]};")
-        if len(palette.content) >= 2:
-            css_vars.append(f"--nt-content-dark: {palette.content[1]};")
+        for mode, palette in palettes.items():
+            # Generate Vars for this palette
+            vars_list = []
             
-        # Custom colors
-        css_vars.append(f"--nt-inactive: {palette.inative};")
-        for name, color in palette.colors.items():
-             css_vars.append(f"--nt-color-{name}: {color};")
+            # Helper to resolve
+            def rc(ref): return palette.resolve_color(ref)
 
-        # Inject CSS variables
-        self._inject_css_vars(css_vars)
+            # Surface
+            for i, surf in enumerate(palette.surface):
+                vars_list.append(f"--nt-surface-{i}: {rc(surf)};")
+                if i == 0: vars_list.append(f"--nt-surface-page: {rc(surf)};")
+            
+            # Content
+            for i, cont in enumerate(palette.content):
+                vars_list.append(f"--nt-content-{i}: {rc(cont)};")
+                if i == 0: vars_list.append(f"--nt-content-accent: {rc(cont)};")
+            
+            # Texture colors (now in Palette)
+            vars_list.append(f"--nt-shadow-color: {rc(palette.shadow)};")
+            vars_list.append(f"--nt-highlight-color: {rc(palette.highlight)};")
+            vars_list.append(f"--nt-border-color: {rc(palette.border)};")
+            
+            # Base Colors (Apply to Root only? Or both? Actually colors like primary usually stay same, but let's allow override)
+            # If mode is light (or default), we put everything in :root
+            # If mode is dark, we put in body.body--dark
+            
+            brand_vars = [
+                f"--nt-primary: {rc(palette.primary)};",
+                f"--nt-secondary: {rc(palette.secondary)};",
+                f"--nt-positive: {rc(palette.positive)};",
+                f"--nt-negative: {rc(palette.negative)};",
+                f"--nt-warning: {rc(palette.warning)};",
+                f"--nt-info: {rc(palette.info)};",
+                f"--nt-inactive: {rc(palette.inative)};",
+            ]
+            
+            # Custom & Named Colors
+            for name, color in palette.colors.items():
+                brand_vars.append(f"--nt-color-{name}: {rc(color)};")
+            
+            all_vars = brand_vars + vars_list
+            
+            if mode == 'light':
+                css_styles.append(":root {\n  " + "\n  ".join(all_vars) + "\n}")
+            elif mode == 'dark':
+                css_styles.append("\nbody.body--dark {\n  " + "\n  ".join(all_vars) + "\n}")
+                
+        ui.add_head_html(f"<style>{''.join(css_styles)}</style>")
 
-    def _apply_texture(self, texture: Texture):
+
+    def _apply_texture(self, texture: Texture, palette: Palette):
+        # We need a reference palette to resolve colors if texture had any, but now texture uses palette vars.
+        # But wait, logic in icon.py used texture.shadow (removed).
+        # The CSS vars for texture are mainly intensities.
+        
         css_vars = []
-        css_vars.append(f"--nt-shadow-color: {texture.shadow};")
         css_vars.append(f"--nt-shadow-intensity: {texture.shadow_intensity};")
-        css_vars.append(f"--nt-highlight-color: {texture.highlight};")
         css_vars.append(f"--nt-highlight-intensity: {texture.highlight_intensity};")
         css_vars.append(f"--nt-opacity: {texture.opacity};")
+        css_vars.append(f"--nt-border-width: {texture.border_width}px;")
         
-        # Inject CSS variables
         self._inject_css_vars(css_vars)
         
-        # Quasar/Other CSS overrides if needed
-        # (e.g., overriding generic shadow classes if texture.css is provided or needed)
         if texture.css:
              ui.add_head_html(f"<style>{texture.css}</style>")
 
@@ -97,15 +118,13 @@ class ThemeManager:
         css_vars.append(f"--nt-font-secondary: {typography.secondary};")
         css_vars.append(f"--nt-font-scale: {typography.scale};")
         
-        # Text transform logic could be handled via class helpers or global reset
-        # For now, we'll just expose it as a variable if helpful, or specific CSS
         if typography.title_case:
              # Map 'title_case' enum to CSS values
              transform_map = {
                  "lowercase": "lowercase",
                  "uppercase": "uppercase",
                  "title_case": "capitalize", # capitalize is closest to title case in CSS
-                 None: "none"
+                 "none": "none"
              }
              val = transform_map.get(typography.title_case, "none")
              css_vars.append(f"--nt-text-transform-title: {val};")
@@ -120,8 +139,6 @@ class ThemeManager:
     def _inject_static_styles(self):
         """Injects static CSS files."""
         # Assume assets/icons.css is relative to this file's package structure
-        # We need to find the absolute path or read it.
-        # Since we are in nicetheme/core, assets is in nicetheme/assets
         import os
         
         current_dir = os.path.dirname(os.path.abspath(__file__))
