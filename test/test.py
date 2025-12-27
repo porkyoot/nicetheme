@@ -112,6 +112,6 @@ with ui.column().classes('w-full items-center p-8 gap-8 bg-gray-100 dark:bg-gray
     # Molecule: Theme Config
     with ui.card().classes('w-full max-w-4xl p-6'):
         ui.label('Theme Config').classes('text-2xl font-semibold mb-4 text-gray-700')
-        theme_config()
+        theme_config(manager=manager, registry=registry)
 
 ui.run(port=8080, title='NiceTheme Showcase', show=False, reload=True)

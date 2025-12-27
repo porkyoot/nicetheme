@@ -1,5 +1,5 @@
 from nicegui import ui
-from typing import Dict, List
+from typing import Dict, List, Optional
 from .themes import Theme, Palette, Texture, Layout, Typography
 
 class ThemeManager:
@@ -8,10 +8,14 @@ class ThemeManager:
     Translates Theme objects into NiceGUI colors, CSS variables, and other settings.
     """
 
+    def __init__(self):
+        self.theme: Optional[Theme] = None
+
     def apply(self, theme: Theme):
         """
         Applies the given theme to the application.
         """
+        self.theme = theme
         self._apply_palettes(theme.palettes)
         self._apply_texture(theme.texture, theme.palette) # Pass palette for resolving texture colors
         self._apply_layout(theme.layout)

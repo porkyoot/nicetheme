@@ -18,21 +18,13 @@ class theme_config(ui.column):
         
         palette_options = []
         if self.registry and self.registry.palettes:
-            # We assume a default or active palette is available. 
-            # For this config component, we might want to track the *currently selected* palette configuration.
-            # Ideally, self.manager.theme.palette would be the source of truth if manager is applied.
-            # But here we might be editing a definition.
-            # Let's assume we edit the *active* theme's palette.
-            active_palette_name = 'solarized' # Default fallback
-            if self.manager and self.manager.theme:
-                 # In a real app we'd find the name. For now let's use the registry's first or solarized.
-                 pass
-            
-            # For the purpose of this UI, we'll pick one to edit.
-            self._palette = self.registry.palettes.get('solarized') or next(iter(self.registry.palettes.values()))
+            # For the purpose of this UI, we'll pick the 'solarized' palette or the first one in registry.
+            # ThemeRegistry stores name -> { mode: Palette }
+            palette_group = self.registry.palettes.get('solarized') or next(iter(self.registry.palettes.values()))
+            self._palette = palette_group.get('light') or next(iter(palette_group.values()))
             
             # Build palette options for the select
-            for name, pal in self.registry.palettes.items():
+            for name in self.registry.palettes.keys():
                  palette_options.append({
                      'label': {'label': name.title(), 'icon': 'palette'},
                      'value': name
