@@ -1,5 +1,7 @@
 from nicegui import ui
 
-ui.label('Hello World from NiceTheme!')
+# Comparison with standard toggle
+ui.label('Standard ui.toggle for comparison')
+ui.toggle(options=['A', 'B', 'C'], value='A')
 
-ui.run(port=8080, title='NiceTheme Test')
+ui.run(port=8080, title='NiceTheme Test', show=False, reload=True)

@@ -26,6 +26,7 @@ class Texture:
     highlight: str
     highlight_intensity: float
     opacity: float
+    border_width: float
     
     css: str # see quasar styling for details ?
 
