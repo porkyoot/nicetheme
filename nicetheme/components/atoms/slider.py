@@ -122,7 +122,7 @@ class palette_slider(ui.element):
                  on_change: Optional[Callable[[str], None]] = None):
         super().__init__('div')
         # Container styling
-        self.classes('relative w-full rounded-full overflow-hidden flex row no-wrap cursor-pointer')
+        self.classes('relative w-full rounded-full overflow-hidden flex row no-wrap cursor-pointer select-none')
         self.style(f'height: {height}; box-shadow: var(--nd-shadow-sm);')
         
         # Validations
@@ -133,6 +133,10 @@ class palette_slider(ui.element):
         self._value = value if value in colors else colors[0]
         self._on_change = on_change
         self._items = {} # Map color -> element
+        self._dragging = False
+        
+        # Global mouseup listener to stop dragging even if released outside the component
+        self.on('window:mouseup', self._handle_mouseup)
         
         self._render_items()
 
@@ -152,12 +156,24 @@ class palette_slider(ui.element):
                 # Selection indicator
                 if is_selected:
                     self._inject_indicator(item)
-                    
-                # Click event
-                # Note: Capture color in lambda default arg
-                item.on('click', lambda _, c=color: self.set_value(c))
+                
+                # Drag events
+                # Use .stop to prevent browser drag/selection behaviors
+                item.on('mousedown.stop', lambda _, c=color: self._handle_mousedown(c))
+                item.on('mouseenter', lambda _, c=color: self._handle_mouseenter(c))
                 
                 self._items[color] = item
+
+    def _handle_mousedown(self, color: str):
+        self._dragging = True
+        self.set_value(color)
+
+    def _handle_mouseenter(self, color: str):
+        if self._dragging:
+            self.set_value(color)
+
+    def _handle_mouseup(self):
+        self._dragging = False
 
     def _inject_indicator(self, container):
         with container:
