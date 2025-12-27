@@ -34,7 +34,7 @@ class ThemeManager:
             accent=base_palette.resolve_color(base_palette.content[0]) if base_palette.content else base_palette.resolve_color(base_palette.primary),
         )
 
-        css_styles = []
+        css_styles: List[str] = []
 
         for mode, palette in palettes.items():
             # Generate Vars for this palette
@@ -87,9 +87,6 @@ class ThemeManager:
 
 
     def _apply_texture(self, texture: Texture, palette: Palette):
-        # We need a reference palette to resolve colors if texture had any, but now texture uses palette vars.
-        # But wait, logic in icon.py used texture.shadow (removed).
-        # The CSS vars for texture are mainly intensities.
         
         css_vars = []
         css_vars.append(f"--nt-shadow-intensity: {texture.shadow_intensity};")

@@ -14,7 +14,9 @@ class select(ui.select):
         
         # Normalize list of dicts to dict for NiceGUI
         if isinstance(options, list) and options and isinstance(options[0], dict):
-            options = {(opt.get('value') or opt.get('label')): opt for opt in options if opt.get('value') or opt.get('label')}
+            # We map Value -> Label (which can be a rich dict)
+            # This ensures props.opt.label in Quasar is the label struct, not the whole option struct.
+            options = {(opt.get('value') or opt.get('label')): opt.get('label') for opt in options if opt.get('value') or opt.get('label')}
 
         # Extract value from dict if passed
         if 'value' in kwargs and isinstance(kwargs['value'], dict):

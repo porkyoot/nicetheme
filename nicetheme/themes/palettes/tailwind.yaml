@@ -1,0 +1,54 @@
+palette:
+  name: tailwind
+  colors:
+    blue: "#2B7FFF"
+    sky: "#00A6F4"
+    cyan: "#00B8DB"
+    teal: "#00BBA7"
+    emerald: "#00BC7D"
+    green: "#00C950"
+    lime: "#7CCF00"
+    yellow: "#F0B100"
+    amber: "#FE9A00"
+    orange: "#FF6900"
+    red: "#FB2C36"
+    rose: "#FF2056"
+    pink: "#F6339A"
+    fuchsia: "#E12AFB"
+    purple: "#AD46FF"
+    violet: "#8E51FF"
+    indigo: "#615FFF"
+
+  
+  greys:
+    white: "#ffffff"
+    black: "#000000"
+    slate_50: "#f8fafc"
+    slate_100: "#f1f5f9"
+    slate_800: "#1e293b"
+    slate_900: "#0f172a"
+    slate: "#62748E"
+    gray: "#6A7282"
+    zinc: "#71717B"
+
+  primary: blue
+  secondary: pink
+  positive: green
+  negative: red
+  warning: amber
+  info: sky
+  debug: slate
+  inative: slate
+  
+  dark:
+    content: [slate_100, slate_50]
+    surface: [slate_900, slate_800, black]
+    shadow: black
+    highlight: slate_800
+    border: slate_800
+  light:
+    content: [slate_900, slate_800]
+    surface: [white, slate_50, slate_100]
+    shadow: slate
+    highlight: white
+    border: slate

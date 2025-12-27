@@ -10,7 +10,7 @@ palette:
     magenta:   "#d33682"
     violet:    "#6c71c4"
     
-  custom_colors: 
+  greys:
     base03:    "#002b36"
     base02:    "#073642"
     base01:    "#586e75"

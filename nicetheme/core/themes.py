@@ -8,7 +8,7 @@ class Palette:
     name: str
     mode: Literal["light", "dark"]
     colors: Dict[str, str]
-    custom_colors: Dict[str, str]
+    greys: Dict[str, str]
     
     primary: str
     secondary: str
@@ -31,13 +31,13 @@ class Palette:
         if color_ref.startswith("#") or color_ref.startswith("rgb") or color_ref.startswith("hsl"): 
             return color_ref
         
-        # Check standard colors
+        # Check colors
         if color_ref in self.colors:
             return self.colors[color_ref]
             
-        # Check custom colors
-        if color_ref in self.custom_colors:
-            return self.custom_colors[color_ref]
+        # Check greys
+        if color_ref in self.greys:
+            return self.greys[color_ref]
             
         return color_ref # Fallback if not found
 

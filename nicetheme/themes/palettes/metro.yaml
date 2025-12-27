@@ -1,0 +1,51 @@
+palette:
+  name: metro
+  colors:
+    cobalt: "#0050EF"
+    cyan: "#1BA1E2"
+    olive: "#6D8764"
+    teal: "#00ABA9"
+    emerald: "#008A00"
+    green: "#60A917"
+    lime: "#A4C400"
+    yellow: "#E3C800"
+    amber: "#F0A30A"
+    orange: "#FA6800"
+    brown: "#825A2C"
+    sienna: "#A0522D"
+    red: "#E51400"
+    crimson: "#A20025"
+    magenta: "#D80073"
+    pink: "#F472D0"
+    violet: "#AA00FF"
+    indigo: "#6A00FF"
+    mauve: "#76608A"
+  
+  greys:
+    white: "#ffffff"
+    black: "#000000"
+    grey_light: "#eff4ff"
+    grey_dark: "#1d1d1d"
+    steel: "#647687"
+    
+  primary: cyan
+  secondary: magenta
+  positive: green
+  negative: red
+  warning: amber
+  info: cobalt
+  debug: steel
+  inative: steel
+  
+  dark:
+    content: [white, white]
+    surface: [black, grey_dark]
+    shadow: black
+    highlight: grey_dark
+    border: steel
+  light:
+    content: [black, grey_dark]
+    surface: [white, grey_light]
+    shadow: grey_dark
+    highlight: white
+    border: steel

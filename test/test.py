@@ -9,7 +9,8 @@ from nicetheme.core.registry import ThemeRegistry
 from nicetheme.core.themes import Theme, Typography, Palette, Texture, Layout
 from nicetheme.components.atoms.button import button, select_button
 from nicetheme.components.atoms.select import select
-from nicetheme.components.atoms.icon import palette_icon, texture_icon, theme_icon
+from nicetheme.components.atoms.icon import palette_icon
+from nicetheme.components.molecules.theme_config import theme_config
 
 # Initialize Registry and Manager
 registry = ThemeRegistry(None)
@@ -108,12 +109,9 @@ with ui.column().classes('w-full items-center p-8 gap-8 bg-gray-100 dark:bg-gray
                 palette_icon(theme.palette, size="64px")
                 ui.label('Palette').classes('text-xs text-gray-500')
 
-            with ui.column().classes('items-center gap-2'):
-                texture_icon(theme.texture, theme.palette, theme.layout, size="64px")
-                ui.label('Texture').classes('text-xs text-gray-500')
-            
-            with ui.column().classes('items-center gap-2'):
-                theme_icon(theme, size="64px")
-                ui.label('Full Theme').classes('text-xs text-gray-500')
+    # Molecule: Theme Config
+    with ui.card().classes('w-full max-w-4xl p-6'):
+        ui.label('Theme Config').classes('text-2xl font-semibold mb-4 text-gray-700')
+        theme_config()
 
 ui.run(port=8080, title='NiceTheme Showcase', show=False, reload=True)

@@ -1,0 +1,53 @@
+palette:
+  name: material
+  colors:
+    blue: "#2196F3"
+    light_blue: "#03A9F4"
+    cyan: "#00BCD4"
+    teal: "#009688"
+    green: "#4CAF50"
+    light_green: "#8BC34A"
+    lime: "#CDDC39"
+    yellow: "#FFEB3B"
+    amber: "#FFC107"
+    orange: "#FF9800"
+    deep_orange: "#FF5722"
+    brown: "#795548"
+    red: "#F44336"
+    pink: "#E91E63"
+    purple: "#9C27B0"
+    deep_purple: "#673AB7"
+    indigo: "#3F51B5"
+
+  greys:
+    white: "#ffffff"
+    black: "#000000"
+    grey_50: "#fafafa"
+    grey_100: "#f5f5f5"
+    grey_200: "#eeeeee"
+    grey_300: "#e0e0e0"
+    grey_800: "#424242"
+    grey_900: "#212121"
+    blue_grey: "#607D8B"
+
+  primary: blue
+  secondary: pink
+  positive: green
+  negative: red
+  warning: amber
+  info: light_blue
+  debug: grey
+  inative: grey
+  
+  dark:
+    content: [grey_200, grey_100]
+    surface: [grey_900, grey_800, black]
+    shadow: black
+    highlight: grey_800
+    border: grey_800
+  light:
+    content: [grey_900, grey_800]
+    surface: [white, grey_50, grey_100]
+    shadow: grey_300
+    highlight: white
+    border: grey_300
