@@ -1,0 +1,13 @@
+primary: "#b58900"
+secondary: "#cb4b16"
+content: ["#586e75", "#657b83"]
+surface: ["#fdf6e3", "#eee8d5", "#93a1a1"]
+positive: "#859900"
+negative: "#dc322f"
+warning: "#b58900"
+info: "#268bd2"
+debug: "#d33682"
+inative: "#93a1a1"
+colors: 
+  blue: "#268bd2"
+custom_colors: {}
