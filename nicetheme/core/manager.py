@@ -16,6 +16,7 @@ class ThemeManager:
         self._apply_texture(theme.texture)
         self._apply_layout(theme.layout)
         self._apply_typography(theme.typography)
+        self._inject_static_styles()
 
     def _apply_palette(self, palette: Palette):
         # 1. Update Quasar/NiceGUI brand colors
@@ -115,3 +116,21 @@ class ThemeManager:
         """Helper to inject a list of CSS variables into :root"""
         styles = ":root {\n  " + "\n  ".join(vars_list) + "\n}"
         ui.add_head_html(f"<style>{styles}</style>")
+
+    def _inject_static_styles(self):
+        """Injects static CSS files."""
+        # Assume assets/icons.css is relative to this file's package structure
+        # We need to find the absolute path or read it.
+        # Since we are in nicetheme/core, assets is in nicetheme/assets
+        import os
+        
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        assets_dir = os.path.join(os.path.dirname(current_dir), 'assets')
+        icons_css_path = os.path.join(assets_dir, 'icons.css')
+        
+        if os.path.exists(icons_css_path):
+            with open(icons_css_path, 'r') as f:
+                css_content = f.read()
+            ui.add_head_html(f"<style>{css_content}</style>")
+        else:
+            print(f"Warning: icons.css not found at {icons_css_path}")

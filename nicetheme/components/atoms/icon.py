@@ -34,11 +34,11 @@ class palette_icon(ui.element):
         # Set SVG attributes
         self._props['viewBox'] = '0 0 24 24'
         self._props['xmlns'] = 'http://www.w3.org/2000/svg'
-        self.classes('-nd-c-theme-icon')
+        self.classes('nt-theme-icon')
         self.style(f'width: {size}; height: {size};')
         
         if circular:
-            self.style('border-radius: 50%;')
+            self.classes('nt-theme-icon--circular')
         
         # Generate the SVG content
         self._generate_icon(background_color, foreground_color, colors)
@@ -138,10 +138,9 @@ class palette_icon(ui.element):
         content = palette_icon._generate_content(background_color, foreground_color, colors)
         
         style = f'width: {size}; height: {size};'
-        if circular:
-            style += ' border-radius: 50%;'
+        circular_class = 'nt-theme-icon--circular' if circular else ''
             
-        return f'<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="-nd-c-theme-icon" style="{style}">{content}</svg>'
+        return f'<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="nt-theme-icon {circular_class}" style="{style}">{content}</svg>'
  
     def _generate_icon(self, bg_color: str, fg_color: str, colors: Dict[str, str]):
         """Generate the SVG elements for the theme icon."""
@@ -166,10 +165,10 @@ class texture_icon(ui.element):
         super().__init__('div')
         
         # Apply base styling
-        self.classes('-nd-c-texture-icon')
+        self.classes('nt-texture-icon')
         
         # Calculate shadow directly from texture intensity
-        wrapper_style = f'width: {size}; height: {size}; position: relative;'
+        wrapper_style = f'width: {size}; height: {size};'
         
         # shadow_intensity is now just a float on Texture, check if > 0
         if texture.shadow_intensity > 0:
@@ -203,7 +202,7 @@ class texture_icon(ui.element):
         
         # Create the circle element
         with self:
-            circle = ui.element('div').classes('-nd-c-texture-icon__circle')
+            circle = ui.element('div').classes('nt-texture-icon__circle')
             
             # Apply texture class (css property in Texture)
             if texture.css:
@@ -212,14 +211,11 @@ class texture_icon(ui.element):
             # Apply opacity
             if texture.opacity < 1.0:
                 # Create glassmorphism effect
-                circle.style(f'''
-                    background: rgba(128, 128, 128, {texture.opacity});
-                    backdrop-filter: blur(10px);
-                    -webkit-backdrop-filter: blur(10px);
-                ''')
+                circle.classes('nt-glass')
+                circle.style(f'background: rgba(128, 128, 128, {texture.opacity});')
             else:
                 # Solid background
-                circle.style('background: var(--nd-surface-layer);')
+                circle.style('background: var(--nt-surface-page);')
             
             # Apply border and transitions
             # Apply shape-based border and roundness
@@ -235,36 +231,25 @@ class texture_icon(ui.element):
                 border_radius = f'{radius_percent}%'
 
             circle.style(f'''
-                position: relative;
-                border: {border_width_px} solid rgba(255, 255, 255, 0.1);
+                border-width: {border_width_px};
                 border-radius: {border_radius};
-                width: 100%;
-                height: 100%;
-                overflow: hidden;
-                transition: all var(--nd-transition-speed) ease;
             ''')
             
             with circle:
                  # Apply highlight density if applicable
                 if texture.highlight_intensity > 0:
-                    # Add a subtle gloss effect
-                    ui.element('div').style(f'''
-                        position: absolute;
-                        top: 0; left: 0; width: 100%; height: 50%;
-                        background: linear-gradient(to bottom, rgba(255,255,255,{0.1 * texture.highlight_intensity}), transparent);
-                        pointer-events: none;
-                        z-index: 10;
-                    ''')
+                    # Pass intensity as var if needed, or inline style for specific gradient
+                    ui.element('div').classes('nt-texture-icon__highlight').style(f'--nt-highlight-intensity: {0.1 * texture.highlight_intensity};')
             
             # Add hover effect
-            circle.classes('-nd-c-texture-icon__circle--interactive')
+            circle.classes('nt-texture-icon__circle--interactive')
 
     @staticmethod
     def to_html(texture: Texture, palette: Palette, layout: Layout, *, size: str = "24px") -> str:
         """Returns the full HTML string for this component."""
         
         # Wrapper styles with shadow
-        wrapper_style = f'width: {size}; height: {size}; position: relative; display: inline-block;'
+        wrapper_style = f'width: {size}; height: {size};'
         
         # Calculate shadow directly from texture intensity  
         if texture.shadow_intensity > 0:
@@ -293,13 +278,14 @@ class texture_icon(ui.element):
         
         # Circle styles
         circle_style = ''
+        circle_classes = 'nt-texture-icon__circle'
         
         # Opacity/Backdrop
         if texture.opacity < 1.0:
-            circle_style += f'background: rgba(128, 128, 128, {texture.opacity}); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);'
+            circle_classes += ' nt-glass'
+            circle_style += f'background: rgba(128, 128, 128, {texture.opacity});'
         else:
-             circle_style += 'background: var(--nd-surface-layer);'
-             
+             circle_style += 'background: var(--nt-surface-page);'
              
         # Shape styling
         border_width_px = f"{max(1.0, float(texture.border_width) * 0.5)}px"
@@ -312,30 +298,29 @@ class texture_icon(ui.element):
             radius_percent = (layout.roundness / 2.0) * 50
             border_radius = f'{radius_percent}%'
 
-        # Border and general
-        circle_style += f' position: relative; border: {border_width_px} solid rgba(255, 255, 255, 0.1); border-radius: {border_radius}; width: 100%; height: 100%; overflow: hidden; transition: all var(--nd-transition-speed) ease;'
+        circle_style += f' border-width: {border_width_px}; border-radius: {border_radius};'
         
         # Clean up
         circle_style = circle_style.replace('\n', ' ').strip()
         
-        # Gloss effect HTML if highlight_intensity is high
+        # Gloss effect
         gloss_html = ""
         if texture.highlight_intensity > 0:
-             gloss_html = f'<div style="position: absolute; top: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to bottom, rgba(255,255,255,{0.1 * texture.highlight_intensity}), transparent); pointer-events: none; z-index: 10;"></div>'
+            # Using inline style for intensity var
+             gloss_html = f'<div class="nt-texture-icon__highlight" style="--nt-highlight-intensity: {0.1 * texture.highlight_intensity};"></div>'
 
         # The circle div
         # Using texture.css if present
         css_cls = texture.css if texture.css else ""
-        circle_html = f'<div class="-nd-c-texture-icon__circle {css_cls}" style="{circle_style}">{gloss_html}</div>'
+        circle_html = f'<div class="{circle_classes} {css_cls}" style="{circle_style}">{gloss_html}</div>'
         
-        return f'<div class="-nd-c-texture-icon" style="{wrapper_style}">{circle_html}</div>'
+        return f'<div class="nt-texture-icon" style="{wrapper_style}">{circle_html}</div>'
 
 
 class theme_icon(ui.element):
     """
     A comprehensive icon that displays a visual representation of a complete theme.
     Combines palette, texture, typography, and layout by composing visuals.
-    (Note: Typography and Layout are represented subtly or through spacing).
     """
     def __init__(
         self, 
@@ -346,14 +331,14 @@ class theme_icon(ui.element):
         super().__init__('div')
         
         # Apply base styling
-        self.classes('-nd-c-theme-icon')
+        self.classes('nt-theme-icon-wrapper')
         
         palette = theme.palette
         texture = theme.texture
         layout = theme.layout
 
         # Calculate shadow directly from texture intensity and apply to wrapper (like texture_icon)
-        wrapper_style = f'width: {size}; height: {size}; position: relative; display: inline-flex; align-items: center; justify-content: center;'
+        wrapper_style = f'width: {size}; height: {size};'
         if texture.shadow_intensity > 0:
             # Get shadow color from texture
             r, g, b = hex_to_rgb(texture.shadow)
@@ -387,9 +372,8 @@ class theme_icon(ui.element):
         with self:
             # Apply texture-based effects to the container
             # Make the visible disk slightly smaller (85%) to match standard icon scale
-            texture_container = ui.element('div').classes('nd-theme-icon__container')
-            # Ensure container is centered and 85% of parent
-            texture_container.style('width: 85%; height: 85%; display: flex; align-items: center; justify-content: center;')
+            texture_container = ui.element('div').classes('nt-theme-icon__container')
+            # Width/Height managed by class (85%), alignment by class
             
             # Apply texture opacity 
             if texture.opacity < 1.0:
@@ -409,19 +393,11 @@ class theme_icon(ui.element):
             
             # The palette icon as the core visual
             with texture_container:
-                container = ui.element('div').style(f'''
-                    position: relative;
-                    width: 100%;
-                    height: 100%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
+                container = ui.element('div').classes('nt-theme-icon__palette-container')
+                container.style(f'''
                     border-radius: {border_radius};
-                    border: {border_width_px} solid rgba(255, 255, 255, 0.15);
-                    overflow: hidden;
-                    transition: all var(--nd-transition-speed) ease;
+                    border-width: {border_width_px};
                 ''')
-                container.classes('-nd-c-theme-icon__palette-container')
                 
                 with container:
                     # Reuse the palette_icon for color visualization
@@ -430,14 +406,7 @@ class theme_icon(ui.element):
 
                     # Apply highlight density if applicable - moved here to be inside clipped container
                     if texture.highlight_intensity > 0:
-                        # Add a subtle gloss effect
-                        ui.element('div').style(f'''
-                            position: absolute;
-                            top: 0; left: 0; width: 100%; height: 50%;
-                            background: linear-gradient(to bottom, rgba(255,255,255,{0.1 * texture.highlight_intensity}), transparent);
-                            pointer-events: none;
-                            z-index: 10;
-                        ''')
+                        ui.element('div').classes('nt-texture-icon__highlight').style(f'--nt-highlight-intensity: {0.1 * texture.highlight_intensity};')
 
     @staticmethod
     def to_html(
@@ -451,7 +420,7 @@ class theme_icon(ui.element):
         layout = theme.layout
         
         # Wrapper styles with shadow (match texture_icon behavior)
-        wrapper_style = f'width: {size}; height: {size}; position: relative; display: inline-flex; align-items: center; justify-content: center;'
+        wrapper_style = f'width: {size}; height: {size};'
         
         # Calculate shadow directly from texture intensity and apply to wrapper
         if texture.shadow_intensity > 0:
@@ -478,12 +447,12 @@ class theme_icon(ui.element):
                 shadow_def = f'0 {1*sf:.1f}px {2*sf:.1f}px rgba({r}, {g}, {b}, {0.3 * si:.2f})'
             wrapper_style += f' filter: drop-shadow({shadow_def});'
         
-        # Texture styling - scaled down to 85% and centered
-        texture_style = 'width: 85%; height: 85%; display: flex; align-items: center; justify-content: center;'
+        # Texture styling
+        texture_style = ''
         if texture.opacity < 1.0:
             texture_style += f' opacity: {texture.opacity};'
             
-        # Shape styling (from Texture)
+        # Shape styling
         border_width_px = f"{max(1.0, float(texture.border_width) * 0.5)}px"
         
         if layout.roundness == 0:
@@ -494,18 +463,7 @@ class theme_icon(ui.element):
             radius_percent = (layout.roundness / 2.0) * 50
             border_radius = f'{radius_percent}%'
             
-        container_style = f'''
-            position: relative;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: {border_radius};
-            border: {border_width_px} solid rgba(255, 255, 255, 0.15);
-            overflow: hidden;
-            transition: all var(--nd-transition-speed) ease;
-        '''.strip().replace('\n', ' ')
+        container_style = f'border-radius: {border_radius}; border-width: {border_width_px};'
 
         # Inner palette icon HTML (set to 100% to fill corners)
         inner_html = palette_icon.to_html(palette, size="100%", circular=False)
@@ -513,13 +471,13 @@ class theme_icon(ui.element):
         # Gloss effect HTML if highlight_intensity is high
         gloss_html = ""
         if texture.highlight_intensity > 0:
-             gloss_html = f'<div style="position: absolute; top: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to bottom, rgba(255,255,255,{0.1 * texture.highlight_intensity}), transparent); pointer-events: none; z-index: 10;"></div>'
+             gloss_html = f'<div class="nt-texture-icon__highlight" style="--nt-highlight-intensity: {0.1 * texture.highlight_intensity};"></div>'
 
         # Inner Container (Palette Container)
-        html_palette_container = f'<div class="-nd-c-theme-icon__palette-container" style="{container_style}">{inner_html}{gloss_html}</div>'
+        html_palette_container = f'<div class="nt-theme-icon__palette-container" style="{container_style}">{inner_html}{gloss_html}</div>'
         
         # Texture Container
-        html_texture_container = f'<div class="nd-theme-icon__container" style="{texture_style}">{html_palette_container}</div>'
+        html_texture_container = f'<div class="nt-theme-icon__container" style="{texture_style}">{html_palette_container}</div>'
         
         # Outer Wrapper (wrapper_style already includes shadow)
-        return f'<div class="-nd-c-theme-icon" style="{wrapper_style}">{html_texture_container}</div>'
+        return f'<div class="nt-theme-icon-wrapper" style="{wrapper_style}">{html_texture_container}</div>'
