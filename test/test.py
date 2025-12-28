@@ -71,13 +71,18 @@ theme = get_default_theme()
 manager.apply_theme(theme)
 
 # UI Showcase
-with ui.column().classes('w-full items-center p-8 gap-8 bg-gray-100 dark:bg-gray-900 min-h-screen'):
+with ui.column().classes('w-full items-center p-8 gap-8 min-h-screen'):
     
-    ui.label('NiceTheme Atomic Elements').classes('text-4xl font-bold text-gray-800 dark:text-gray-100 mb-8')
+    ui.label('NiceTheme Atomic Elements').classes('text-4xl font-bold mb-8')
+
+    # Molecule: Theme Config
+    with ui.card().classes('w-full max-w-4xl p-6'):
+        ui.label('Theme Config').classes('text-2xl font-semibold mb-4')
+        theme_config(manager=manager, registry=registry)
 
     # Atom: Buttons
     with ui.card().classes('w-full max-w-4xl p-6'):
-        ui.label('Buttons').classes('text-2xl font-semibold mb-4 text-gray-700')
+        ui.label('Buttons').classes('text-2xl font-semibold mb-4')
         with ui.row().classes('w-full gap-4 items-center flex-wrap'):
             button('Primary Button', on_click=lambda: ui.notify('Primary Clicked'))
             button('Secondary Button', variant='secondary', on_click=lambda: ui.notify('Secondary Clicked'))
@@ -92,7 +97,7 @@ with ui.column().classes('w-full items-center p-8 gap-8 bg-gray-100 dark:bg-gray
 
     # Atom: Selects
     with ui.card().classes('w-full max-w-4xl p-6'):
-        ui.label('Selects').classes('text-2xl font-semibold mb-4 text-gray-700')
+        ui.label('Selects').classes('text-2xl font-semibold mb-4')
         with ui.row().classes('w-full gap-4 items-start flex-wrap'):
             select(['Option 1', 'Option 2', 'Option 3'], label='Standard Select', value='Option 1').classes('w-48')
             select({'a': 'Apple', 'b': 'Banana'}, label='Mapped Select', value='a').classes('w-48')
@@ -109,20 +114,6 @@ with ui.column().classes('w-full items-center p-8 gap-8 bg-gray-100 dark:bg-gray
             # Icon Only
             select(['A', 'B'], label='Icon Only', icon_only=True, value='A').classes('w-12')
 
-    # Atom: Icons (Theme System)
-    with ui.card().classes('w-full max-w-4xl p-6'):
-        ui.label('Theme Icons').classes('text-2xl font-semibold mb-4 text-gray-700')
-        ui.label('Visual representations of theme components').classes('text-sm text-gray-500 mb-4')
-        with ui.row().classes('gap-8 items-center justify-center bg-gray-50 p-8 rounded-lg'):
-            with ui.column().classes('items-center gap-2'):
-                pal = manager.get_active_palette()
-                if pal:
-                    palette_icon(pal, size="64px")
-                ui.label('Palette').classes('text-xs text-gray-500')
 
-    # Molecule: Theme Config
-    with ui.card().classes('w-full max-w-4xl p-6'):
-        ui.label('Theme Config').classes('text-2xl font-semibold mb-4 text-gray-700')
-        theme_config(manager=manager, registry=registry)
 
 ui.run(port=8080, title='NiceTheme Showcase', show=False, reload=True)

@@ -1,14 +1,40 @@
-/* Global Theme Overrides
-   Maps --nt-* variables to Quasar/NiceGUI components
-*/
+/* Global Theme Overrides - Root-Only Strategy */
 
 :root {
+    /* 1. Variable Mapping (Priority 1) */
+    /* Map Quasar variables to NiceTheme tokens in the root scope */
+
+    /* Scaling */
     --q-size-scale: var(--nt-font-scale, 1);
+
+    /* Core Colors */
+    --q-primary: var(--nt-primary) !important;
+    --q-secondary: var(--nt-secondary) !important;
+    --q-accent: var(--nt-content-accent) !important;
+    --q-positive: var(--nt-positive) !important;
+    --q-negative: var(--nt-negative) !important;
+    --q-info: var(--nt-info) !important;
+    --q-warning: var(--nt-warning) !important;
+
+    /* Theme States (Dark Mode) */
+    /* Page background (darkest) vs Component background (lighter) */
+    /* Page Background */
+    --q-dark-page: var(--nt-surface-page) !important;
+
+    /* Separators */
+    --q-separator-color: var(--nt-border-color) !important;
 }
 
-/* 1. Typography */
+/* Shadow Helpers Overrides */
+/* Force Quasar's shadow-1 to shadow-24 to use the theme shadow RGB */
+[class*="shadow-"] {
+    box-shadow: 0 1px 5px rgba(var(--nt-shadow-rgb), 0.2), 0 2px 2px rgba(var(--nt-shadow-rgb), 0.14), 0 3px 1px -2px rgba(var(--nt-shadow-rgb), 0.12) !important;
+}
 
-/* Secondary Font -> Body */
+/* 2. Generic Class Injection (Priority 2) */
+/* Grouped overrides for properties without direct Quasar variable equivalents */
+
+/* Typography */
 body,
 .q-tooltip {
     font-family: var(--nt-font-secondary), Roboto, -apple-system, Helvetica, Arial, sans-serif !important;
@@ -17,18 +43,6 @@ body,
     background-color: var(--nt-surface-page) !important;
 }
 
-/* Scrollbar Override for Webkit */
-::-webkit-scrollbar {
-    width: 12px;
-    background-color: rgba(var(--nt-surface-rgb), 0.5);
-}
-
-::-webkit-scrollbar-thumb {
-    background-color: rgba(var(--nt-content-rgb), 0.2);
-    border-radius: 99px;
-}
-
-/* Primary Font -> Titles/Headers */
 h1,
 h2,
 h3,
@@ -43,10 +57,12 @@ h6,
 .text-h6,
 .q-toolbar__title {
     font-family: var(--nt-font-primary), monospace !important;
-    /* fallback to monospace to make distinct if missing */
 }
 
-/* Text Case (Titles, Buttons, Tabs, Badges) */
+/* Text Transform (Titles, Buttons, etc) */
+.q-btn,
+.q-tab__label,
+.q-badge,
 h1,
 h2,
 h3,
@@ -58,22 +74,17 @@ h6,
 .text-h3,
 .text-h4,
 .text-h5,
-.text-h6,
-.q-btn,
-.q-tab__label,
-.q-badge {
+.text-h6 {
     text-transform: var(--nt-text-transform-title, none) !important;
 }
 
-/* Exclude the toggle options in theme config from text-transform */
-/* Specific class applied in theme_config.py */
+/* Exception: Theme Config Toggle Options */
 .nt-case-toggle .q-btn {
     text-transform: none !important;
 }
 
-
-/* 2. Layout - Roundness & Border Width */
-
+/* Roundness */
+/* Apply to all container-like or button-like elements */
 .q-btn,
 .q-card,
 .q-field__control,
@@ -83,8 +94,8 @@ h6,
     border-radius: calc(var(--nt-roundness, 4) * 1px) !important;
 }
 
-/* Border Width */
-/* Apply to cards and outlined buttons/fields */
+/* Borders */
+/* Apply to bordered variants */
 .q-card--bordered,
 .q-btn--outline,
 .q-btn--bordered,
@@ -93,34 +104,25 @@ h6,
     border-color: var(--nt-border-color) !important;
 }
 
-
-/* 3. Texture / Colors / Opacity / Blur */
-
-/* Apply opacity and blur to container backgrounds */
-/* Using rgba with variable for surface color */
-
+/* Texture (Surface, Opacity, Blur, Shadows) */
+/* Apply to floating/container elements */
 .q-card,
 .q-menu,
 .q-dialog__inner>div,
 .q-tooltip,
 .q-popup-edit {
-    /* Use local fallback for surface rgb if var missing */
+    /* Background with opacity */
     background-color: rgba(var(--nt-surface-rgb, 255, 255, 255), var(--nt-opacity, 1)) !important;
-    backdrop-filter: blur(calc(1px * var(--nt-blur, 0))) !important;
-}
 
-/* Ensure shadows scale */
-.q-card,
-.q-menu,
-.q-dialog__inner>div {
+    /* Blur effect */
+    backdrop-filter: blur(calc(1px * var(--nt-blur, 0))) !important;
+
+    /* Shadows */
     box-shadow: 0 4px 6px -1px rgba(var(--nt-shadow-rgb), calc(0.1 * var(--nt-shadow-intensity, 1))),
         0 2px 4px -1px rgba(var(--nt-shadow-rgb), calc(0.06 * var(--nt-shadow-intensity, 1))) !important;
 }
 
-
-/* 4. Density (Gaps) */
-
-/* Reduce/Increase gaps in flex rows/cols */
+/* Density (Gaps) */
 .row.gap-4,
 .column.gap-4,
 .q-gutter-md {
@@ -133,24 +135,20 @@ h6,
     gap: calc(8px * var(--nt-density, 1)) !important;
 }
 
-/* 5. Components Overrides */
+/* 3. Global Utilities & Specific Components */
 
-/* Palette Slider Indicator */
-.nt-palette-indicator {
-    background-color: rgba(var(--nt-surface-rgb), 0.9) !important;
-    border: 1px solid rgba(var(--nt-content-rgb), 0.1) !important;
-    /* Optional: Provide a slight backdrop blur to mimic the original feel */
-    backdrop-filter: blur(2px);
+/* Scrollbars */
+::-webkit-scrollbar {
+    width: 12px;
+    background-color: rgba(var(--nt-surface-rgb), 0.5);
 }
 
-/* 6. Utility Overrides (White/Black) */
-
-html {
-    color: var(--nt-content-0);
+::-webkit-scrollbar-thumb {
+    background-color: rgba(var(--nt-content-rgb), 0.2);
+    border-radius: 99px;
 }
 
-/* Override Quasar/Tailwind white/black utilities to use Theme White/Black */
-/* Increased specificity (html body ...) to defeat Quasar's !important defaults */
+/* Theme Utilities (White/Black overrides) */
 html body .text-white,
 html body .q-btn.text-white {
     color: var(--nt-color-white, #ffffff) !important;
@@ -169,10 +167,105 @@ html body .bg-black {
     background-color: var(--nt-color-black, #000000) !important;
 }
 
-/* 7. Specific Component Overrides */
+/* Component Specifics */
+.nt-palette-indicator {
+    background-color: rgba(var(--nt-surface-rgb), 0.9) !important;
+    border: 1px solid rgba(var(--nt-content-rgb), 0.1) !important;
+    backdrop-filter: blur(2px);
+}
 
 .nicegui-error-popup {
     background-color: var(--nt-surface-page) !important;
     color: var(--nt-content-0) !important;
     border: 1px solid var(--nt-border-color);
+}
+
+/* 4. Dark Mode Text Contrast Overrides */
+/* Force content colors in dark mode for elements that default to black/dark grey */
+body.body--dark .q-field__label,
+body.body--dark .q-item__label,
+body.body--dark .text-caption,
+body.body--dark .text-grey,
+body.body--dark .q-input,
+body.body--dark .q-select__dropdown-icon,
+body.body--dark .q-field__native,
+body.body--dark .q-field__prefix,
+body.body--dark .q-field__suffix,
+body.body--dark .q-btn__content,
+body.body--dark .q-tab__label,
+body.body--dark .text-xs,
+body.body--dark .nt-tab-label {
+    color: var(--nt-content-0) !important;
+    opacity: 1 !important;
+    /* Fix opacity-60 issues */
+}
+
+/* Specific fix for low contrast opacity elements */
+body.body--dark .opacity-60 {
+    opacity: 0.8 !important;
+    color: var(--nt-content-0) !important;
+}
+
+/* 5. Generic Text Dark Mode Fix */
+/* Quasar's .q-dark class sets color: #fff on #app or q-layout, which we want to be our theme content color */
+body.body--dark .q-layout,
+body.body--dark .q-page-container,
+body.body--dark #app.q-dark {
+    color: var(--nt-content-0) !important;
+}
+
+/* 6. Component Shadow Uniformity */
+
+/* Buttons: Override pseudo-element shadow to use theme color */
+/* Only apply to standard and push buttons, NOT flat or outline */
+.q-btn--standard:before,
+.q-btn--push:before {
+    box-shadow: 0 1px 5px rgba(var(--nt-shadow-rgb), 0.2), 0 2px 2px rgba(var(--nt-shadow-rgb), 0.14), 0 3px 1px -2px rgba(var(--nt-shadow-rgb), 0.12) !important;
+}
+
+/* Fields/Selects: Ensure they have a subtle shadow matching the theme */
+.q-field--standout .q-field__control,
+.q-field--filled .q-field__control,
+.q-field--outlined .q-field__control {
+    /* Optional: Add shadow to inputs if design requires, usually they are flat or rely on border */
+    /* For now, just ensuring any potential shadow uses the theme RGB if it exists */
+    --q-color-shadow: rgba(var(--nt-shadow-rgb), 0.2);
+}
+
+/* Standard Field Underline: Use theme border color */
+.q-field--standard .q-field__control:before {
+    border-bottom-color: var(--nt-border-color) !important;
+}
+
+/* Dropdown Menus: Ensure they use the theme shadow color and correct surface depth */
+/* Default Quasar menu shadow might be black; force theme RGB */
+.q-menu {
+    box-shadow: 0 4px 6px -1px rgba(var(--nt-shadow-rgb), calc(0.1 + 0.1 * var(--nt-shadow-intensity, 1))), 0 2px 4px -1px rgba(var(--nt-shadow-rgb), calc(0.06 + 0.06 * var(--nt-shadow-intensity, 1))) !important;
+    background: var(--nt-surface-2) !important;
+}
+
+/* Tooltips: Use surface-2 */
+.q-tooltip {
+    background: var(--nt-surface-2) !important;
+    color: var(--nt-content-0) !important;
+    /* Ensure text is readable on surface-2 */
+    font-size: 0.75rem;
+}
+
+/* Cards: Use surface-1 */
+.q-card {
+    background: var(--nt-surface-1) !important;
+}
+
+/* Custom Select Button Arrow */
+.nt-select-button .q-icon {
+    text-shadow: none !important;
+    color: var(--nt-content-0) !important;
+}
+
+/* Fix generic box-shadow usage if present on these elements */
+.q-btn,
+.nt-select-button {
+    /* Some variants might put shadow directly on element */
+    --q-shadow-2: 0 1px 5px rgba(var(--nt-shadow-rgb), 0.2), 0 2px 2px rgba(var(--nt-shadow-rgb), 0.14), 0 3px 1px -2px rgba(var(--nt-shadow-rgb), 0.12);
 }

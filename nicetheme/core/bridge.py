@@ -58,16 +58,31 @@ class ThemeBridge:
             warning=palette.resolve_color(palette.warning),
             info=palette.resolve_color(palette.info),
             accent=palette.resolve_color(palette.content[0]) if palette.content else palette.resolve_color(palette.primary),
+            dark=palette.resolve_color('base03'),
         )
 
         # 2. Generate CSS Variables Dictionary
         css_vars = self._generate_css_vars_dict(manager, palette)
         
-        # 3. Update CSS Variables via JS (Dynamic & Fast)
+        # 3. Update CSS Variables & Body Class via JS (Dynamic & Fast)
         import json
+        mode = manager.get_effective_mode()
+        is_dark = mode == 'dark'
+        
         js_cmd = f"""
         const vars = {json.dumps(css_vars)};
         Object.entries(vars).forEach(([k,v]) => document.documentElement.style.setProperty(k, v));
+        
+        // Toggle Body Classes
+        if ({str(is_dark).lower()}) {{
+            document.body.classList.add('body--dark');
+            document.body.classList.remove('body--light');
+            document.querySelector('#app').classList.add('q-dark'); // Standard Quasar
+        }} else {{
+            document.body.classList.remove('body--dark');
+            document.body.classList.add('body--light');
+            document.querySelector('#app').classList.remove('q-dark');
+        }}
         """
         try:
             ui.run_javascript(js_cmd)
