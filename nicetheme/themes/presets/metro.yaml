@@ -1,0 +1,10 @@
+theme:
+  palette: metro
+  mode: light
+  layout: metro
+  texture: flat
+  typography:
+    primary: Inter
+    secondary: Inconsolata
+    scale: 1.0
+    title_case: uppercase

@@ -1,0 +1,10 @@
+theme:
+  palette: solarized
+  mode: dark
+  layout: relaxed
+  texture: flat
+  typography:
+    primary: Roboto
+    secondary: Roboto Mono
+    scale: 1.0
+    title_case: title_case

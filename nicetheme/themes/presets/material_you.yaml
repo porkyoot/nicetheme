@@ -1,0 +1,10 @@
+theme:
+  palette: material
+  mode: light
+  layout: material
+  texture: material
+  typography:
+    primary: Roboto
+    secondary: Roboto Mono
+    scale: 1.0
+    title_case: none
