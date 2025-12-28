@@ -25,21 +25,29 @@ class Palette:
     highlight: str
     border: str
 
-    def resolve_color(self, color_ref: str) -> str:
+    def resolve_color(self, color_ref: str, depth: int = 10) -> str:
         """Resolves a color reference (name) to a hex code or value."""
         if not color_ref: return ""
-        if color_ref.startswith("#") or color_ref.startswith("rgb") or color_ref.startswith("hsl"): 
+        if depth <= 0: return color_ref
+
+        # Check if valid CSS value
+        if color_ref.startswith(("#", "rgb", "hsl", "var")):
             return color_ref
         
         # Check colors
         if color_ref in self.colors:
-            return self.colors[color_ref]
+            return self.resolve_color(self.colors[color_ref], depth - 1)
             
         # Check greys
         if color_ref in self.greys:
-            return self.greys[color_ref]
+            return self.resolve_color(self.greys[color_ref], depth - 1)
+
+        # Check attributes (like primary, secondary)
+        val = getattr(self, color_ref, None)
+        if isinstance(val, str):
+            return self.resolve_color(val, depth - 1)
             
-        return color_ref # Fallback if not found
+        return color_ref # Fallback
 
 @dataclass
 class Texture:
