@@ -56,6 +56,21 @@ class ThemeBridge:
         
         # Helper for resolving colors
         def rc(val): return palette.resolve_color(val)
+        
+        # Helper to hex to rgb
+        def hex_to_rgb(hex_code):
+            hex_code = hex_code.lstrip('#')
+            if len(hex_code) == 3: hex_code = ''.join([c*2 for c in hex_code])
+            return tuple(int(hex_code[i:i+2], 16) for i in (0, 2, 4))
+            
+        def to_rgb_str(val):
+            try:
+                c = rc(val)
+                if c.startswith('#'):
+                    return f"{hex_to_rgb(c)[0]}, {hex_to_rgb(c)[1]}, {hex_to_rgb(c)[2]}"
+                return "0, 0, 0" # Fallback
+            except:
+                return "0, 0, 0"
 
         # Generate CSS Variables for Palette
         css_lines.append(f"--nt-primary: {rc(palette.primary)};")
@@ -64,11 +79,22 @@ class ThemeBridge:
         css_lines.append(f"--nt-negative: {rc(palette.negative)};")
         css_lines.append(f"--nt-warning: {rc(palette.warning)};")
         css_lines.append(f"--nt-info: {rc(palette.info)};")
-        css_lines.append(f"--nt-inactive: {rc(palette.inative)};")
+        css_lines.append(f"--nt-inactive: {rc(palette.inative)};") # Note: typo 'inative' in source
 
         # Custom & Named Colors
         for name, color in palette.colors.items():
             css_lines.append(f"--nt-color-{name}: {rc(color)};")
+
+        # Greys (including white/black checks)
+        for name, color in palette.greys.items():
+             css_lines.append(f"--nt-color-{name}: {rc(color)};")
+
+        # Surface & Content RGB for Opacity
+        if palette.surface:
+             css_lines.append(f"--nt-surface-rgb: {to_rgb_str(palette.surface[0])};")
+        
+        if palette.content:
+             css_lines.append(f"--nt-content-rgb: {to_rgb_str(palette.content[0])};")
 
         # Surface
         for i, surf in enumerate(palette.surface):
@@ -82,14 +108,18 @@ class ThemeBridge:
         
         # Texture colors
         css_lines.append(f"--nt-shadow-color: {rc(palette.shadow)};")
+        css_lines.append(f"--nt-shadow-rgb: {to_rgb_str(palette.shadow)};")
         css_lines.append(f"--nt-highlight-color: {rc(palette.highlight)};")
+        css_lines.append(f"--nt-highlight-rgb: {to_rgb_str(palette.highlight)};")
         css_lines.append(f"--nt-border-color: {rc(palette.border)};")
+        css_lines.append(f"--nt-border-rgb: {to_rgb_str(palette.border)};")
 
         # Handle Texture/Layout/Typography from manager._theme...
         if manager.theme:
             if manager.theme.layout:
                 layout = manager.theme.layout
                 css_lines.append(f"--nt-roundness: {layout.roundness};")
+                css_lines.append(f"--nt-border-width: {layout.border};")
                 css_lines.append(f"--nt-density: {layout.density};")
             
             if manager.theme.texture:
@@ -97,11 +127,12 @@ class ThemeBridge:
                 css_lines.append(f"--nt-shadow-intensity: {texture.shadow_intensity};")
                 css_lines.append(f"--nt-highlight-intensity: {texture.highlight_intensity};")
                 css_lines.append(f"--nt-opacity: {texture.opacity};")
+                css_lines.append(f"--nt-blur: {texture.blur};")
 
             if manager.theme.typography:
                 typo = manager.theme.typography
-                css_lines.append(f"--nt-font-primary: {typo.primary};")
-                css_lines.append(f"--nt-font-secondary: {typo.secondary};")
+                css_lines.append(f"--nt-font-primary: '{typo.primary}';")
+                css_lines.append(f"--nt-font-secondary: '{typo.secondary}';")
                 css_lines.append(f"--nt-font-scale: {typo.scale};")
                 
                 transform_map = {
@@ -134,7 +165,7 @@ class ThemeBridge:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         assets_dir = os.path.join(os.path.dirname(current_dir), 'assets')
         
-        for css_file in ['icons.css', 'sliders.css', 'components.css']:
+        for css_file in ['icons.css', 'sliders.css', 'components.css', 'global_overrides.css']:
             path = os.path.join(assets_dir, css_file)
             if os.path.exists(path):
                 with open(path, 'r') as f:

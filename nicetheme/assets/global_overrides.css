@@ -1,0 +1,178 @@
+/* Global Theme Overrides
+   Maps --nt-* variables to Quasar/NiceGUI components
+*/
+
+:root {
+    --q-size-scale: var(--nt-font-scale, 1);
+}
+
+/* 1. Typography */
+
+/* Secondary Font -> Body */
+body,
+.q-tooltip {
+    font-family: var(--nt-font-secondary), Roboto, -apple-system, Helvetica, Arial, sans-serif !important;
+    font-size: calc(14px * var(--nt-font-scale, 1)) !important;
+    color: var(--nt-content-0) !important;
+    background-color: var(--nt-surface-page) !important;
+}
+
+/* Scrollbar Override for Webkit */
+::-webkit-scrollbar {
+    width: 12px;
+    background-color: rgba(var(--nt-surface-rgb), 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: rgba(var(--nt-content-rgb), 0.2);
+    border-radius: 99px;
+}
+
+/* Primary Font -> Titles/Headers */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.text-h1,
+.text-h2,
+.text-h3,
+.text-h4,
+.text-h5,
+.text-h6,
+.q-toolbar__title {
+    font-family: var(--nt-font-primary), monospace !important;
+    /* fallback to monospace to make distinct if missing */
+}
+
+/* Text Case (Titles, Buttons, Tabs, Badges) */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.text-h1,
+.text-h2,
+.text-h3,
+.text-h4,
+.text-h5,
+.text-h6,
+.q-btn,
+.q-tab__label,
+.q-badge {
+    text-transform: var(--nt-text-transform-title, none) !important;
+}
+
+/* Exclude the toggle options in theme config from text-transform */
+/* Specific class applied in theme_config.py */
+.nt-case-toggle .q-btn {
+    text-transform: none !important;
+}
+
+
+/* 2. Layout - Roundness & Border Width */
+
+.q-btn,
+.q-card,
+.q-field__control,
+.q-dialog__inner>div,
+.q-menu,
+.q-badge {
+    border-radius: calc(var(--nt-roundness, 4) * 1px) !important;
+}
+
+/* Border Width */
+/* Apply to cards and outlined buttons/fields */
+.q-card--bordered,
+.q-btn--outline,
+.q-btn--bordered,
+.q-field--outlined .q-field__control {
+    border-width: calc(var(--nt-border-width, 1) * 1px) !important;
+    border-color: var(--nt-border-color) !important;
+}
+
+
+/* 3. Texture / Colors / Opacity / Blur */
+
+/* Apply opacity and blur to container backgrounds */
+/* Using rgba with variable for surface color */
+
+.q-card,
+.q-menu,
+.q-dialog__inner>div,
+.q-tooltip,
+.q-popup-edit {
+    /* Use local fallback for surface rgb if var missing */
+    background-color: rgba(var(--nt-surface-rgb, 255, 255, 255), var(--nt-opacity, 1)) !important;
+    backdrop-filter: blur(calc(1px * var(--nt-blur, 0))) !important;
+}
+
+/* Ensure shadows scale */
+.q-card,
+.q-menu,
+.q-dialog__inner>div {
+    box-shadow: 0 4px 6px -1px rgba(var(--nt-shadow-rgb), calc(0.1 * var(--nt-shadow-intensity, 1))),
+        0 2px 4px -1px rgba(var(--nt-shadow-rgb), calc(0.06 * var(--nt-shadow-intensity, 1))) !important;
+}
+
+
+/* 4. Density (Gaps) */
+
+/* Reduce/Increase gaps in flex rows/cols */
+.row.gap-4,
+.column.gap-4,
+.q-gutter-md {
+    gap: calc(16px * var(--nt-density, 1)) !important;
+}
+
+.row.gap-2,
+.column.gap-2,
+.q-gutter-sm {
+    gap: calc(8px * var(--nt-density, 1)) !important;
+}
+
+/* 5. Components Overrides */
+
+/* Palette Slider Indicator */
+.nt-palette-indicator {
+    background-color: rgba(var(--nt-surface-rgb), 0.9) !important;
+    border: 1px solid rgba(var(--nt-content-rgb), 0.1) !important;
+    /* Optional: Provide a slight backdrop blur to mimic the original feel */
+    backdrop-filter: blur(2px);
+}
+
+/* 6. Utility Overrides (White/Black) */
+
+html {
+    color: var(--nt-content-0);
+}
+
+/* Override Quasar/Tailwind white/black utilities to use Theme White/Black */
+/* Increased specificity (html body ...) to defeat Quasar's !important defaults */
+html body .text-white,
+html body .q-btn.text-white {
+    color: var(--nt-color-white, #ffffff) !important;
+}
+
+html body .bg-white {
+    background-color: var(--nt-color-white, #ffffff) !important;
+}
+
+html body .text-black,
+html body .q-btn.text-black {
+    color: var(--nt-color-black, #000000) !important;
+}
+
+html body .bg-black {
+    background-color: var(--nt-color-black, #000000) !important;
+}
+
+/* 7. Specific Component Overrides */
+
+.nicegui-error-popup {
+    background-color: var(--nt-surface-page) !important;
+    color: var(--nt-content-0) !important;
+    border: 1px solid var(--nt-border-color);
+}

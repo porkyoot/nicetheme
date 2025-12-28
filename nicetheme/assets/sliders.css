@@ -15,7 +15,7 @@
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
-    box-shadow: var(--nd-shadow-sm, 0 1px 2px 0 rgb(0 0 0 / 0.05));
+    box-shadow: var(--nd-shadow-sm, 0 1px 2px 0 rgba(var(--nt-shadow-rgb), 0.05));
 }
 
 .nt-palette-slider {

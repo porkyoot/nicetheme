@@ -181,7 +181,7 @@ class theme_config(ui.column):
                                 {'value': 'titlecase', 'label': 'Aa', 'tooltip': 'Convert to Title Case'},
                                 {'value': 'uppercase', 'label': 'AA', 'tooltip': 'Convert to UPPERCASE'},
                             ]
-                            self._case_toggle = toggle(case_opts, on_change=self._update_text_case).props('no-caps')
+                            self._case_toggle = toggle(case_opts, on_change=self._update_text_case).props('no-caps').classes('nt-case-toggle')
 
                 with ui.tab_panel('Layout').classes('gap-4 column'):
                     # Row 1: Border & Roundness

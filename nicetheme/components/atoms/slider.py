@@ -167,7 +167,7 @@ class palette_slider(ui.element):
 
     def _inject_indicator(self, container):
         with container:
-             ui.element('div').classes('absolute-center w-1.5 h-1.5 rounded-full bg-white/90 ring-1 ring-black/10').style('box-shadow: var(--nd-shadow-sm);')
+             ui.element('div').classes('absolute-center w-1.5 h-1.5 rounded-full nt-palette-indicator').style('box-shadow: var(--nd-shadow-sm);')
 
     def _handle_slider_change(self, e):
         self._update_selection_visuals(int(e.value))
