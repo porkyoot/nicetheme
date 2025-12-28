@@ -64,6 +64,14 @@ class _RichToggle(ui.toggle):
         else:
              pass 
 
+class _DelegatingProps:
+    def __init__(self, wrapper: 'toggle'):
+        self._wrapper = wrapper
+
+    def __call__(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> 'toggle':
+        self._wrapper.inner.props(add, remove=remove)
+        return self._wrapper
+
 class toggle(ui.element):
     def __init__(self, options: Union[List, Dict], color_map: Optional[Dict[Any, str]] = None, on_change=None, **kwargs):
         super().__init__('div')
@@ -87,9 +95,9 @@ class toggle(ui.element):
                          # .q-btn-group is the root of q-btn-toggle
                          ui.tooltip(tooltip_text).props(f'target=".{unique_cls} > .q-btn:nth-child({i+1})"')
 
-    def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> 'toggle':
-        self.inner.props(add, remove=remove)
-        return self
+    @property
+    def props(self) -> Any:
+        return _DelegatingProps(self)
 
 
     @property

@@ -173,13 +173,6 @@ class theme_config(ui.column):
                             ui.label('Blur').classes('text-[10px] opacity-60 font-bold uppercase tracking-wider')
                             self._blur_slider = slider(min=0, max=40, step=1, on_change=self._update_blur)
 
-                        with ui.column().classes('col gap-1'):
-                            ui.label('Border Width').classes('text-[10px] opacity-60 font-bold uppercase tracking-wider')
-                            self._border_slider = slider(
-                                min=0, max=10, step=0.5, 
-                                on_change=self._update_border_width
-                        )
-
                 with ui.tab_panel('Typography').classes('gap-4 column'):
                     # Font Selection
                     with ui.column().classes('w-full gap-2'):
@@ -217,6 +210,27 @@ class theme_config(ui.column):
                                 {'value': 'uppercase', 'label': 'AA', 'tooltip': 'Convert to UPPERCASE'},
                             ]
                             self._case_toggle = toggle(case_opts, on_change=self._update_text_case).props('no-caps')
+
+                with ui.tab_panel('Layout').classes('gap-4 column'):
+                    # Row 1: Border & Roundness
+                    with ui.row().classes('w-full gap-4'):
+                        # Border
+                        with ui.column().classes('col gap-1'):
+                            ui.label('Border').classes('text-[10px] opacity-60 font-bold uppercase tracking-wider')
+                            self._border_slider = slider(min=0, max=4, step=1, on_change=self._update_border)
+                        
+                        # Roundness
+                        with ui.column().classes('col gap-1'):
+                            ui.label('Roundness').classes('text-[10px] opacity-60 font-bold uppercase tracking-wider')
+                            self._roundness_slider = slider(min=0, max=32, step=1, on_change=self._update_roundness)
+
+                    # Row 2: Density
+                    with ui.column().classes('w-full gap-1'):
+                        ui.label('Density').classes('text-[10px] opacity-60 font-bold uppercase tracking-wider')
+                        self._density_slider = slider(min=0.5, max=1.5, step=0.05, on_change=self._update_density)
+                    
+               
+                    
 
         # Sync with manager
         self.manager.on_change(self._update_ui)
@@ -258,7 +272,6 @@ class theme_config(ui.column):
                 
                 self._blur_slider.value = tex.blur
                 self._opacity_slider.value = tex.opacity
-                self._border_slider.value = tex.border_width
                 
                 self._blur_container.set_visibility(tex.opacity < 1)
 
@@ -268,7 +281,15 @@ class theme_config(ui.column):
                 self._font_primary_select.value = typo.primary
                 self._font_secondary_select.value = typo.secondary
                 self._font_scale_slider.value = typo.scale
+                self._font_scale_slider.value = typo.scale
                 self._case_toggle.value = typo.title_case
+
+            # 7. Update Layout UI
+            if self.manager.theme and self.manager.theme.layout:
+                layout = self.manager.theme.layout
+                self._border_slider.value = layout.border
+                self._roundness_slider.value = layout.roundness
+                self._density_slider.value = layout.density
             
         finally:
             self._updating = False
@@ -327,10 +348,22 @@ class theme_config(ui.column):
             self._blur_container.set_visibility(e.value < 1)
             self.manager.apply()
 
-    def _update_border_width(self, e):
+    def _update_border(self, e):
         if self._updating: return
-        if self.manager.theme and self.manager.theme.texture:
-            self.manager.theme.texture.border_width = e.value
+        if self.manager.theme and self.manager.theme.layout:
+            self.manager.theme.layout.border = e.value
+            self.manager.apply()
+
+    def _update_roundness(self, e):
+        if self._updating: return
+        if self.manager.theme and self.manager.theme.layout:
+            self.manager.theme.layout.roundness = e.value
+            self.manager.apply()
+
+    def _update_density(self, e):
+        if self._updating: return
+        if self.manager.theme and self.manager.theme.layout:
+            self.manager.theme.layout.density = e.value
             self.manager.apply()
 
     def _filter_fonts(self, value: str):

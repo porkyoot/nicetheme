@@ -1,5 +1,5 @@
 from nicegui import ui
-from typing import Dict, List, Optional
+from typing import Callable, Dict, List, Literal, Optional
 from .themes import Theme, Palette, Texture, Layout, Typography
 
 class ThemeManager:
@@ -51,7 +51,7 @@ class ThemeManager:
         self._inject_static_styles()
         self._notify_listeners()
 
-    def set_mode(self, mode: str):
+    def set_mode(self, mode: Literal['light', 'dark', 'auto']):
         self._mode = mode
         self.apply()
 
@@ -129,7 +129,6 @@ class ThemeManager:
         css_vars.append(f"--nt-shadow-intensity: {texture.shadow_intensity};")
         css_vars.append(f"--nt-highlight-intensity: {texture.highlight_intensity};")
         css_vars.append(f"--nt-opacity: {texture.opacity};")
-        css_vars.append(f"--nt-border-width: {texture.border_width}px;")
         
         self._inject_css_vars(css_vars)
         

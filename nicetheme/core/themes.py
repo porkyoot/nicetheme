@@ -47,13 +47,13 @@ class Texture:
     highlight_intensity: float
     opacity: float
     blur: int
-    border_width: float
     css: str = ""
 
 @dataclass
 class Layout:
     roundness: float
     density: float
+    border: float
 
 @dataclass
 class Typography:
