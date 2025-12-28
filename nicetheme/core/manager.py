@@ -10,21 +10,54 @@ class ThemeManager:
 
     def __init__(self):
         self.theme: Optional[Theme] = None
+        self.active_palette_name: str = 'solarized'
+        self._mode: Literal['light', 'dark', 'auto'] = 'light'
+        self._listeners: List[Callable[[], None]] = []
 
-    def apply(self, theme: Theme):
+    def on_change(self, listener: Callable[[], None]):
+        """Registers a listener for theme changes."""
+        self._listeners.append(listener)
+
+    def _notify_listeners(self):
+        for listener in self._listeners:
+            try:
+                listener()
+            except Exception as e:
+                print(f"Error notifying listener: {e}")
+
+    def apply(self, theme: Optional[Theme] = None):
         """
         Applies the given theme to the application.
+        If no theme is provided, re-applies the current theme.
         """
-        self.theme = theme
-        self._apply_palettes(theme.palettes)
-        self._apply_texture(theme.texture, theme.palette) # Pass palette for resolving texture colors
-        self._apply_layout(theme.layout)
-        self._apply_typography(theme.typography)
-        self._inject_static_styles()
+        if theme:
+            self.theme = theme
+        
+        if not self.theme:
+            return
 
-    def _apply_palettes(self, palettes: Dict[str, Palette]):
-        # Determine base palette for global Quasar config (prefer light)
-        base_palette = palettes.get('light') or next(iter(palettes.values()))
+        # Use current mode to find which palette to apply for global Quasar
+        # 'auto' usually means follow system, but for now we'll pick light if auto
+        effective_mode = self._mode
+        if effective_mode == 'auto':
+            effective_mode = 'light' # TODO: detect system mode?
+            
+        palette = self.theme.palettes.get(effective_mode) or next(iter(self.theme.palettes.values()))
+        
+        self._apply_palettes(self.theme.palettes, effective_mode)
+        self._apply_texture(self.theme.texture, palette) 
+        self._apply_layout(self.theme.layout)
+        self._apply_typography(self.theme.typography)
+        self._inject_static_styles()
+        self._notify_listeners()
+
+    def set_mode(self, mode: str):
+        self._mode = mode
+        self.apply()
+
+    def _apply_palettes(self, palettes: Dict[str, Palette], active_mode: str):
+        # Determine base palette for global Quasar config
+        base_palette = palettes.get(active_mode) or next(iter(palettes.values()))
         
         # 1. Update Quasar/NiceGUI brand colors
         # Use resolve_color method from Palette

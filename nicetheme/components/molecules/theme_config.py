@@ -8,57 +8,25 @@ from nicetheme.core.manager import ThemeManager
 from nicetheme.core.registry import ThemeRegistry
 
 class theme_config(ui.column):
-    def __init__(self, manager: Optional[ThemeManager] = None, registry: Optional[ThemeRegistry] = None):
+    def __init__(self, manager: ThemeManager, registry: ThemeRegistry):
         super().__init__()
         
         self.manager = manager
         self.registry = registry
 
-        self.registry = registry
+        # Local state to track which palette object we are currently editing
+        self._palette: Optional[Palette] = None
         
         palette_options = []
         if self.registry and self.registry.palettes:
-            # For the purpose of this UI, we'll pick the 'solarized' palette or the first one in registry.
-            # ThemeRegistry stores name -> { mode: Palette }
-            palette_group = self.registry.palettes.get('solarized') or next(iter(self.registry.palettes.values()))
-            self._palette = palette_group.get('light') or next(iter(palette_group.values()))
-            
             # Build palette options for the select
             for name in self.registry.palettes.keys():
                  palette_options.append({
                      'label': {'label': name.title(), 'icon': 'palette'},
                      'value': name
                  })
-        else:
-             # Fallback mock palette if no registry
-             from nicetheme.core.themes import Palette
-             self._palette = Palette(
-                name='mock', 
-                mode='light',
-                colors={'blue': '#007bff', 'gray': '#6c757d'},
-                greys={'100': '#f8f9fa', '900': '#212529'},
-                primary='#007bff', 
-                secondary='#6c757d',
-                positive='#28a745',
-                negative='#dc3545',
-                warning='#ffc107',
-                info='#17a2b8',
-                debug='#6c757d',
-                inative='#adb5bd',
-                content=['#212529'],
-                surface=['#ffffff'],
-                shadow='#000000',
-                highlight='#ffffff',
-                border='#dee2e6'
-             )
-             
-             palette_options = [
-                {'label': {'label': 'Solarized', 'icon': 'palette'}, 'value': 'solarized'},
-                {'label': {'label': 'Metro', 'icon': 'grid_view'}, 'value': 'metro'},
-             ]
-
+        
         # CSS for the tab animation
-        # We keep this here for now as it defines the 'nt-tab-label' behavior used by the atom
         ui.add_head_html('''
             <style>
                 .nt-tab-label {
@@ -75,8 +43,6 @@ class theme_config(ui.column):
                     opacity: 1;
                     margin-left: 8px;
                 }
-                
-                /* Ensure tab content is centered and row-aligned */
                 .q-tab__content {
                     flex-direction: row !important;
                     flex-wrap: nowrap !important;
@@ -110,47 +76,72 @@ class theme_config(ui.column):
                             'dark': 'info'
                         }
                         
-                        toggle(toggle_opts, value='auto', color_map=color_map).props('flat text-color=grey-7 round')
-
+                        self._mode_toggle = toggle(toggle_opts, color_map=color_map, on_change=self._handle_mode_change)
+                        self._mode_toggle.props('flat text-color=grey-7 round')
 
                         # Palette Select
-                        select(palette_options, value='solarized', label='Theme Palette').classes('w-48')
+                        self._palette_select = select(palette_options, label='Theme Palette', on_change=self._handle_palette_change).classes('w-48')
 
                     # Row 2: Color Sliders
                     with ui.column().classes('w-full gap-2'):
-                        # Primary Accent
                         ui.label('Primary Accent').classes('text-xs opacity-60 font-bold mb-1')
                         self._primary_accent_slider = palette_slider(
-                            colors=self._palette.colors,
-                            value=self._palette.primary,
-                            on_change=self._update_primary_accent
+                            colors={}, value='', on_change=self._update_primary_accent
                         )
 
-                        # Secondary Accent
                         ui.label('Secondary Accent').classes('text-xs opacity-60 font-bold mb-1')
                         self._secondary_accent_slider = palette_slider(
-                            colors=self._palette.colors,
-                            value=self._palette.secondary,
-                            on_change=self._update_secondary_accent
+                            colors={}, value='', on_change=self._update_secondary_accent
                         )
 
-                with ui.tab_panel('Texture'):
-                    ui.label('Texture Controls')
-                    
-                with ui.tab_panel('Typography'):
-                    ui.label('Typography Controls')
-                    
-                with ui.tab_panel('Layout'):
-                    ui.label('Layout Controls')
+        # Sync with manager
+        self.manager.on_change(self._update_ui)
+        self._update_ui()
+
+    def _update_ui(self):
+        """Updates the UI components based on the manager's current state."""
+        if not self.manager.theme:
+            return
+            
+        # 1. Update Mode Toggle
+        self._mode_toggle.value = self.manager._mode
+        
+        # 2. Update Palette Select
+        self._palette_select.value = self.manager.active_palette_name
+        
+        # 3. Resolve actual Palette object based on mode
+        effective_mode = self.manager._mode
+        if effective_mode == 'auto':
+            effective_mode = 'light' # Simple fallback
+            
+        palette_set = self.registry.palettes.get(self.manager.active_palette_name)
+        if palette_set:
+            self._palette = palette_set.get(effective_mode)
+            
+        if self._palette:
+            # 4. Update Sliders
+            self._primary_accent_slider.set_colors(self._palette.colors, self._palette.primary)
+            self._secondary_accent_slider.set_colors(self._palette.colors, self._palette.secondary)
+
+    def _handle_palette_change(self, e):
+        self.manager.active_palette_name = e.value
+        # If we change the palette name, we should also update the manager's theme palettes
+        palette_set = self.registry.palettes.get(e.value)
+        if palette_set and self.manager.theme:
+            self.manager.theme.palettes = palette_set
+            self.manager.apply()
+
+    def _handle_mode_change(self, e):
+        self.manager.set_mode(e.value)
 
     def _update_primary_accent(self, color: str):
-        self._palette.primary = color
-        if self.manager and self.manager.theme:
-             self.manager.apply(self.manager.theme) # Re-apply theme if possible
+        if self._palette:
+            self._palette.primary = color
+            self.manager.apply()
         ui.notify(f'Primary updated to {color}')
 
     def _update_secondary_accent(self, color: str):
-        self._palette.secondary = color
-        if self.manager and self.manager.theme:
-             self.manager.apply(self.manager.theme)
+        if self._palette:
+            self._palette.secondary = color
+            self.manager.apply()
         ui.notify(f'Secondary updated to {color}')

@@ -19,15 +19,19 @@ manager = ThemeManager()
 # Setup Defaults if Registry is empty or to ensure we have a valid theme
 def get_default_theme() -> Theme:
     # Palette
+    palette_name = 'solarized'
     if registry.palettes:
-        # Pick one if available, prefer 'solarized' if it exists to match previous context or just the first
-        palettes = registry.palettes.get('solarized') or next(iter(registry.palettes.values()))
+        if palette_name not in registry.palettes:
+            palette_name = next(iter(registry.palettes.keys()))
+        palettes = registry.palettes[palette_name]
     else:
+        palette_name = 'default'
         light_palette = Palette(
             name="default", mode="light",
             primary="#007bff", secondary="#6c757d",
             positive="#28a745", negative="#dc3545", warning="#ffc107", info="#17a2b8", debug="#f8f9fa",
-            inative="#adb5bd", colors={}, custom_colors={},
+            inative="#adb5bd", colors={},
+            greys={},
             content=["#000000", "#333333"], surface=["#ffffff", "#f8f9fa"],
             shadow="#000000", highlight="#ffffff", border="#e0e0e0"
         )
@@ -35,11 +39,14 @@ def get_default_theme() -> Theme:
             name="default", mode="dark",
             primary="#007bff", secondary="#6c757d",
             positive="#28a745", negative="#dc3545", warning="#ffc107", info="#17a2b8", debug="#f8f9fa",
-            inative="#adb5bd", colors={}, custom_colors={},
+            inative="#adb5bd", colors={},
+            greys={},
             content=["#ffffff", "#e0e0e0"], surface=["#121212", "#1e1e1e"],
             shadow="#000000", highlight="#333333", border="#444444"
         )
         palettes = {'light': light_palette, 'dark': dark_palette}
+
+    manager.active_palette_name = palette_name
 
     # Texture
     if registry.textures:
