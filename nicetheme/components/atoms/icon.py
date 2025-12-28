@@ -119,7 +119,8 @@ class palette_icon(ui.element):
         svg_content.append(f'''
             <line x1="{cx}" y1="{cy - center_radius}" 
                   x2="{cx}" y2="{cy + center_radius}" 
-                  stroke="rgba(255,255,255,0.2)" 
+                  stroke="var(--nt-content-0)" 
+                  stroke-opacity="0.2"
                   stroke-width="0.5" />
         '''.strip())
  

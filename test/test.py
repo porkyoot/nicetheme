@@ -72,7 +72,7 @@ manager.apply_theme(theme)
 
 # UI Showcase
 # UI Showcase
-with ui.column().classes('w-full items-center p-8 gap-8 min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white'):
+with ui.column().classes('w-full items-center p-8 gap-8 min-h-screen'):
     
     ui.label('NiceTheme Atomic Elements').classes('text-4xl font-bold mb-8')
 
@@ -212,9 +212,9 @@ with ui.column().classes('w-full items-center p-8 gap-8 min-h-screen bg-gray-50 
         with ui.row().classes('gap-4 items-center mb-6'):
             ui.avatar('face')
             ui.chip('Chip', icon='face', removable=True)
-            ui.chip('Selected', icon='check', color='primary', text_color='white')
-            with ui.button(icon='notifications', color='white').props('text-color="black"'):
-                ui.badge('5', color='red').props('floating')
+            ui.chip('Selected', icon='check').classes('bg-primary text-white')
+            with ui.button(icon='notifications').classes('bg-white text-black'):
+                ui.badge('5').props('floating').classes('bg-negative text-white')
         
         columns = [
             {'name': 'name', 'label': 'Name', 'field': 'name', 'align': 'left'},

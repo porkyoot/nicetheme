@@ -50,6 +50,13 @@ class ThemeManager:
             current_palette.primary = color
             self._notify()
 
+    def update_secondary_color(self, color: str):
+        # Logic to update secondary accent color
+        current_palette = self.get_active_palette()
+        if current_palette:
+            current_palette.secondary = color
+            self._notify()
+
     # --- Getters (Computed Properties) ---
 
     def get_effective_mode(self) -> str:

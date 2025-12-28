@@ -55,7 +55,13 @@ class Texture:
     highlight_intensity: float
     opacity: float
     blur: int
-    css: str = ""
+    button: str = ""
+    card: str = ""
+    progress: str = ""
+    slider: str = ""
+    toggle: str = ""
+    chip: str = ""  # Also applies to badges
+    menu: str = ""  # Also applies to tooltips and notifications
 
 @dataclass
 class Layout:

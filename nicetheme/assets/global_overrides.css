@@ -1,6 +1,9 @@
 /* Global Theme Overrides - Root-Only Strategy */
 
 :root {
+    /* Font Scale - Applied globally to affect ALL text */
+    font-size: calc(16px * var(--nt-font-scale, 1));
+
     /* 1. Variable Mapping (Priority 1) */
     /* Map Quasar variables to NiceTheme tokens in the root scope */
 
@@ -28,7 +31,7 @@
 /* Shadow Helpers Overrides */
 /* Force Quasar's shadow-1 to shadow-24 to use the theme shadow RGB */
 [class*="shadow-"] {
-    box-shadow: 0 1px 5px rgba(var(--nt-shadow-rgb), 0.2), 0 2px 2px rgba(var(--nt-shadow-rgb), 0.14), 0 3px 1px -2px rgba(var(--nt-shadow-rgb), 0.12) !important;
+    box-shadow: 0 1px 5px rgba(var(--nt-shadow-rgb), calc(0.2 * var(--nt-shadow-intensity, 1))), 0 2px 2px rgba(var(--nt-shadow-rgb), calc(0.14 * var(--nt-shadow-intensity, 1))), 0 3px 1px -2px rgba(var(--nt-shadow-rgb), calc(0.12 * var(--nt-shadow-intensity, 1))) !important;
 }
 
 /* 2. Generic Class Injection (Priority 2) */
@@ -38,7 +41,6 @@
 body,
 .q-tooltip {
     font-family: var(--nt-font-secondary), Roboto, -apple-system, Helvetica, Arial, sans-serif !important;
-    font-size: calc(14px * var(--nt-font-scale, 1)) !important;
     color: var(--nt-content-0) !important;
     background-color: var(--nt-surface-page) !important;
 }
@@ -55,7 +57,13 @@ h6,
 .text-h4,
 .text-h5,
 .text-h6,
-.q-toolbar__title {
+.q-toolbar__title,
+.text-2xl,
+.text-3xl,
+.text-4xl,
+.text-5xl,
+.text-6xl,
+.text-7xl {
     font-family: var(--nt-font-primary), monospace !important;
 }
 
@@ -74,7 +82,13 @@ h6,
 .text-h3,
 .text-h4,
 .text-h5,
-.text-h6 {
+.text-h6,
+.text-2xl,
+.text-3xl,
+.text-4xl,
+.text-5xl,
+.text-6xl,
+.text-7xl {
     text-transform: var(--nt-text-transform-title, none) !important;
 }
 
@@ -90,7 +104,20 @@ h6,
 .q-field__control,
 .q-dialog__inner>div,
 .q-menu,
-.q-badge {
+.q-badge,
+.q-date,
+.q-time,
+.q-color-picker,
+.q-tab-panel,
+.q-splitter,
+.q-stepper,
+.q-table,
+.q-table__container,
+.q-tooltip,
+.q-notification,
+.q-expansion-item,
+.q-panel,
+.q-toggle__track {
     border-radius: calc(var(--nt-roundness, 4) * 1px) !important;
 }
 
@@ -151,20 +178,20 @@ h6,
 /* Theme Utilities (White/Black overrides) */
 html body .text-white,
 html body .q-btn.text-white {
-    color: var(--nt-color-white, #ffffff) !important;
+    color: var(--nt-color-white) !important;
 }
 
 html body .bg-white {
-    background-color: var(--nt-color-white, #ffffff) !important;
+    background-color: var(--nt-color-white) !important;
 }
 
 html body .text-black,
 html body .q-btn.text-black {
-    color: var(--nt-color-black, #000000) !important;
+    color: var(--nt-color-black) !important;
 }
 
 html body .bg-black {
-    background-color: var(--nt-color-black, #000000) !important;
+    background-color: var(--nt-color-black) !important;
 }
 
 /* Component Specifics */
@@ -220,7 +247,17 @@ body.body--dark #app.q-dark {
 /* Only apply to standard and push buttons, NOT flat or outline */
 .q-btn--standard:before,
 .q-btn--push:before {
-    box-shadow: 0 1px 5px rgba(var(--nt-shadow-rgb), 0.2), 0 2px 2px rgba(var(--nt-shadow-rgb), 0.14), 0 3px 1px -2px rgba(var(--nt-shadow-rgb), 0.12) !important;
+    box-shadow: 0 1px 5px rgba(var(--nt-shadow-rgb), calc(0.2 * var(--nt-shadow-intensity, 1))), 0 2px 2px rgba(var(--nt-shadow-rgb), calc(0.14 * var(--nt-shadow-intensity, 1))), 0 3px 1px -2px rgba(var(--nt-shadow-rgb), calc(0.12 * var(--nt-shadow-intensity, 1))) !important;
+}
+
+/* Exception: Toggle buttons should not have shadows */
+.q-btn-toggle .q-btn--standard:before {
+    box-shadow: none !important;
+}
+
+/* Button Groups: Apply themed shadows */
+.q-btn-group {
+    box-shadow: 0 1px 5px rgba(var(--nt-shadow-rgb), calc(0.2 * var(--nt-shadow-intensity, 1))), 0 2px 2px rgba(var(--nt-shadow-rgb), calc(0.14 * var(--nt-shadow-intensity, 1))), 0 3px 1px -2px rgba(var(--nt-shadow-rgb), calc(0.12 * var(--nt-shadow-intensity, 1))) !important;
 }
 
 /* Fields/Selects: Ensure they have a subtle shadow matching the theme */
@@ -267,5 +304,125 @@ body.body--dark #app.q-dark {
 .q-btn,
 .nt-select-button {
     /* Some variants might put shadow directly on element */
-    --q-shadow-2: 0 1px 5px rgba(var(--nt-shadow-rgb), 0.2), 0 2px 2px rgba(var(--nt-shadow-rgb), 0.14), 0 3px 1px -2px rgba(var(--nt-shadow-rgb), 0.12);
+    --q-shadow-2: 0 1px 5px rgba(var(--nt-shadow-rgb), calc(0.2 * var(--nt-shadow-intensity, 1))), 0 2px 2px rgba(var(--nt-shadow-rgb), calc(0.14 * var(--nt-shadow-intensity, 1))), 0 3px 1px -2px rgba(var(--nt-shadow-rgb), calc(0.12 * var(--nt-shadow-intensity, 1)));
+}
+
+/* 7. Unconverted Component Fixes (Radios, Toggles, Pickers, etc.) */
+
+/* Radios: Fix inactive border color */
+.q-radio__inner {
+    color: var(--nt-inactive) !important;
+}
+
+.q-radio__inner--truthy {
+    color: var(--nt-primary) !important;
+}
+
+/* Toggles: Remove unwanted shadows */
+.q-toggle__thumb:before {
+    box-shadow: none !important;
+}
+
+.q-toggle__inner--truthy .q-toggle__thumb:before {
+    /* Optional: restore a subtle shadow if needed, or keep flat as requested */
+    box-shadow: 0 1px 3px rgba(var(--nt-shadow-rgb), 0.2) !important;
+}
+
+/* Date & Time Pickers: Fix backgrounds and text */
+.q-date,
+.q-time {
+    background: var(--nt-surface-1) !important;
+    color: var(--nt-content-0) !important;
+    border: calc(var(--nt-border-width, 1) * 1px) solid var(--nt-border-color) !important;
+}
+
+.q-date__header,
+.q-time__header {
+    background-color: var(--nt-primary) !important;
+    color: var(--nt-content-0-inverse, #fff) !important;
+}
+
+.q-date__calendar-item button {
+    color: var(--nt-content-0) !important;
+}
+
+/* Color Picker: Fix background */
+.q-color-picker {
+    background: var(--nt-surface-1) !important;
+    box-shadow: 0 4px 6px -1px rgba(var(--nt-shadow-rgb), calc(0.1 * var(--nt-shadow-intensity, 1))), 0 2px 4px -1px rgba(var(--nt-shadow-rgb), calc(0.06 * var(--nt-shadow-intensity, 1))) !important;
+    border: calc(var(--nt-border-width, 1) * 1px) solid var(--nt-border-color) !important;
+}
+
+.q-color-picker__header {
+    background: var(--nt-surface-2) !important;
+}
+
+/* Panels: Fix background unstyled */
+.q-tab-panel {
+    background: transparent !important;
+    /* Should inherit from container/card */
+    color: var(--nt-content-0);
+}
+
+.q-tab-panels {
+    background: transparent !important;
+    border: calc(var(--nt-border-width, 1) * 1px) solid var(--nt-border-color) !important;
+}
+
+/* Stepper: Fix background */
+.q-stepper {
+    background: var(--nt-surface-1) !important;
+    color: var(--nt-content-0) !important;
+    border: calc(var(--nt-border-width, 1) * 1px) solid var(--nt-border-color) !important;
+    box-shadow: 0 2px 4px -1px rgba(var(--nt-shadow-rgb), calc(0.1 * var(--nt-shadow-intensity, 1))), 0 1px 2px -1px rgba(var(--nt-shadow-rgb), calc(0.06 * var(--nt-shadow-intensity, 1))) !important;
+}
+
+.q-stepper__step-inner {
+    color: var(--nt-content-0);
+}
+
+.q-stepper--bordered {
+    border: 1px solid var(--nt-border-color) !important;
+}
+
+/* Table: Fix background and text */
+.q-table__container {
+    background: var(--nt-surface-1) !important;
+    color: var(--nt-content-0) !important;
+    border: calc(var(--nt-border-width, 1) * 1px) solid var(--nt-border-color) !important;
+    box-shadow: 0 2px 4px -1px rgba(var(--nt-shadow-rgb), calc(0.1 * var(--nt-shadow-intensity, 1))), 0 1px 2px -1px rgba(var(--nt-shadow-rgb), calc(0.06 * var(--nt-shadow-intensity, 1))) !important;
+}
+
+.q-table {
+    color: var(--nt-content-0) !important;
+}
+
+.q-table th {
+    color: var(--nt-content-1) !important;
+    /* Slightly muted header */
+    opacity: 0.8;
+}
+
+.q-table__bottom {
+    border-top: 1px solid var(--nt-border-color) !important;
+    background: var(--nt-surface-1) !important;
+    color: var(--nt-content-0);
+}
+
+/* Tree: Fix text styling */
+.q-tree {
+    color: var(--nt-content-0) !important;
+}
+
+.q-tree__node-header-content {
+    color: var(--nt-content-0);
+}
+
+.q-tree__icon {
+    color: var(--nt-content-1) !important;
+}
+
+/* Notifications: Apply shadow intensity */
+.q-notification {
+    box-shadow: 0 4px 6px -1px rgba(var(--nt-shadow-rgb), calc(0.1 * var(--nt-shadow-intensity, 1))), 0 2px 4px -1px rgba(var(--nt-shadow-rgb), calc(0.06 * var(--nt-shadow-intensity, 1))) !important;
 }

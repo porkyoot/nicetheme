@@ -38,6 +38,9 @@ class ThemeBridge:
                     ui.add_head_html(f"<style>body.body--dark {{ {vars_block} }}</style>")
                 else:
                     ui.add_head_html(f"<style>:root {{ {vars_block} }}</style>")
+                
+                # Inject texture CSS
+                self._inject_texture_css(self.manager.theme.texture)
 
     def sync(self, manager: ThemeManager):
         """Called whenever the manager notifies of a change."""
@@ -89,6 +92,10 @@ class ThemeBridge:
         except (AssertionError, RuntimeError):
             # No active client/loop (e.g. during startup), skip JS update
             pass
+        
+        # Update texture CSS dynamically
+        if manager.theme and manager.theme.texture:
+            self._update_texture_css_dynamic(manager.theme.texture)
 
     def _generate_css_vars_dict(self, manager: ThemeManager, palette: Palette) -> dict:
         """Generates a flat dictionary of CSS variables."""
@@ -125,6 +132,12 @@ class ThemeBridge:
         # Custom & Named Colors
         for name, color in palette.colors.items():
             css_vars[f"--nt-color-{name}"] = rc(color)
+        
+        # Ensure base colors exist
+        if 'white' not in palette.colors:
+            css_vars["--nt-color-white"] = "#ffffff"
+        if 'black' not in palette.colors:
+            css_vars["--nt-color-black"] = "#000000"
 
         # Greys
         for name, color in palette.greys.items():
@@ -237,3 +250,54 @@ class ThemeBridge:
         if css_rules:
             ui.add_head_html(f"<style>{''.join(css_rules)}</style>")
 
+    def _inject_texture_css(self, texture: Texture):
+        """Generates and injects component-specific texture CSS on initial load."""
+        css = self._generate_texture_css(texture)
+        if css:
+            ui.add_head_html(f'<style id="nt-texture-css">{css}</style>')
+    
+    def _update_texture_css_dynamic(self, texture: Texture):
+        """Dynamically updates texture CSS via JavaScript."""
+        css = self._generate_texture_css(texture)
+        if css:
+            # Escape for JavaScript string
+            import json
+            css_escaped = json.dumps(css)
+            js_cmd = f"""
+            let styleEl = document.getElementById('nt-texture-css');
+            if (!styleEl) {{
+                styleEl = document.createElement('style');
+                styleEl.id = 'nt-texture-css';
+                document.head.appendChild(styleEl);
+            }}
+            styleEl.textContent = {css_escaped};
+            """
+            try:
+                ui.run_javascript(js_cmd)
+            except (AssertionError, RuntimeError):
+                pass
+    
+    def _generate_texture_css(self, texture: Texture) -> str:
+        """Generates CSS rules from component-specific texture properties."""
+        rules = []
+        
+        # Component type to CSS selectors mapping
+        selectors = {
+            'button': '.q-btn:not(.q-btn--flat):not(.q-btn--outline)',
+            'card': '.q-card, .nicegui-card',
+            'progress': '.q-linear-progress, .q-circular-progress',
+            'slider': '.q-slider, .palette-slider',
+            'toggle': '.q-toggle, .q-checkbox, .q-radio',
+            'chip': '.q-chip, .q-badge',
+            'menu': '.q-menu, .q-tooltip, .q-notification'
+        }
+        
+        # Generate rules for each component type
+        for component, selector in selectors.items():
+            css_props = getattr(texture, component, "")
+            if css_props and css_props.strip():
+                # Handle multiline YAML properties
+                props_cleaned = css_props.strip().replace('\n', ' ')
+                rules.append(f"{selector} {{ {props_cleaned} }}")
+        
+        return '\n'.join(rules)

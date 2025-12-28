@@ -223,13 +223,37 @@ class theme_config(ui.column):
             self._palette = self.manager.get_active_palette()
                 
             if self._palette:
-                # 4. Update Sliders
-                self._primary_accent_slider.set_colors(self._palette.colors, self._palette.primary)
-                self._secondary_accent_slider.set_colors(self._palette.colors, self._palette.secondary)
+                # 4. Update Sliders - resolve color references to actual hex values
+                self._primary_accent_slider.set_colors(
+                    self._palette.colors, 
+                    self._palette.resolve_color(self._palette.primary)
+                )
+                self._secondary_accent_slider.set_colors(
+                    self._palette.colors, 
+                    self._palette.resolve_color(self._palette.secondary)
+                )
 
             # 5. Update Texture UI
             if self.manager.theme and self.manager.theme.texture:
                 tex = self.manager.theme.texture
+                
+                # Sync texture select dropdown - find matching registered texture
+                current_texture_name = None
+                for name, registered_tex in self.registry.textures.items():
+                    # Check if this is the same texture object or has matching properties
+                    if registered_tex is tex or (
+                        registered_tex.shadow_intensity == tex.shadow_intensity and
+                        registered_tex.highlight_intensity == tex.highlight_intensity and
+                        registered_tex.blur == tex.blur and
+                        registered_tex.opacity == tex.opacity
+                    ):
+                        current_texture_name = name
+                        break
+                
+                if current_texture_name:
+                    self._texture_select.value = current_texture_name
+                
+                # Update texture sliders
                 self._shadow_highlight_slider.slider_left.value = tex.shadow_intensity
                 self._shadow_highlight_slider.slider_right.value = tex.highlight_intensity
                 
@@ -273,9 +297,8 @@ class theme_config(ui.column):
 
     def _update_secondary_accent(self, color: str):
         if self._updating: return
-        if self._palette:
-            self._palette.secondary = color
-            self.manager.refresh()
+        # Use manager method for consistent state management
+        self.manager.update_secondary_color(color)
         ui.notify(f'Secondary updated to {color}')
 
     def _handle_texture_change(self, e):

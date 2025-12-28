@@ -2,4 +2,10 @@ shadow_intensity: 0.2
 highlight_intensity: 0.8
 opacity: 0.8
 blur: 10
-css: ".frosted { backdrop-filter: blur(10px); }"
+button: "backdrop-filter: blur(10px); background: rgba(var(--nt-surface-1-rgb), 0.8);"
+card: "backdrop-filter: blur(10px); background: rgba(var(--nt-surface-0-rgb), 0.8);"
+progress: "backdrop-filter: blur(10px); background: rgba(var(--nt-surface-2-rgb), 0.8);"
+slider: "backdrop-filter: blur(10px);"
+toggle: "backdrop-filter: blur(10px); background: rgba(var(--nt-surface-1-rgb), 0.8);"
+chip: "backdrop-filter: blur(10px); background: rgba(var(--nt-surface-1-rgb), 0.8);"
+menu: "backdrop-filter: blur(10px); background: rgba(var(--nt-surface-0-rgb), 0.8);"
