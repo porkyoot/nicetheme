@@ -17,6 +17,9 @@ class ThemeBridge:
         # Subscribe to changes automatically
         self.manager.bind(self.sync)
         
+        # FOUC Prevention: Hide body until theme is ready
+        self._inject_fouc_prevention()
+        
         # Inject static resources
         self._inject_static_styles()
         self._inject_google_fonts()
@@ -41,6 +44,9 @@ class ThemeBridge:
                 
                 # Inject texture CSS
                 self._inject_texture_css(self.manager.theme.texture)
+        
+        # Mark theme as ready - reveal body smoothly
+        self._mark_theme_ready()
 
     def sync(self, manager: ThemeManager):
         """Called whenever the manager notifies of a change."""
@@ -301,3 +307,35 @@ class ThemeBridge:
                 rules.append(f"{selector} {{ {props_cleaned} }}")
         
         return '\n'.join(rules)
+
+    def _inject_fouc_prevention(self):
+        """Injects CSS to prevent Flash of Unstyled Content (FOUC)."""
+        fouc_css = """
+        body {
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+        }
+        body.theme-ready {
+            opacity: 1;
+        }
+        """
+        ui.add_head_html(f"<style>{fouc_css}</style>")
+    
+    def _mark_theme_ready(self):
+        """Marks the theme as ready by adding the theme-ready class to body."""
+        ready_script = """
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.classList.add('theme-ready');
+        });
+        // Fallback in case DOMContentLoaded already fired
+        if (document.readyState === 'loading') {
+            // Still loading, listener will fire
+        } else {
+            // Already loaded
+            document.body.classList.add('theme-ready');
+        }
+        </script>
+        """
+        ui.add_head_html(ready_script)
+

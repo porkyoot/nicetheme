@@ -1,7 +1,7 @@
 theme:
-  palette: solarized
+  palette: tailwind
   layout: relaxed
-  texture: flat
+  texture: paper
   typography:
     primary: recursive
     secondary: recursive
