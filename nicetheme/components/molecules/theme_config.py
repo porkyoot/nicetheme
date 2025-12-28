@@ -22,17 +22,28 @@ class theme_config(ui.column):
 
         # Curated list of Google Fonts
         google_fonts = [
-            "Roboto", "Inter", "Open Sans", "Montserrat", "Lato", 
-            "Poppins", "Oswald", "Playfair Display", "Merriweather", "Source Sans Pro"
+            "Roboto", "Open Sans", "Noto Sans JP", "Inter", "Lato", "Montserrat", 
+            "Oswald", "Source Sans Pro", "Slabo 27px", "Raleway", "PT Sans", 
+            "Merriweather", "Nunito Sans", "Prompt", "Work Sans", "Rubik",
+            "Playfair Display", "Fira Sans", "Mukta", "Quicksand", "Karla",
+            "Titillium Web", "Inconsolata", "Barlow", "Dosis", "Cabin",
+            "Bitter", "Anton", "Oxygen", "Arvo", "Libre Baskerville", "Lobster",
+            "Pacifico", "Shadows Into Light", "Dancing Script", "Bebas Neue",
+            "Poppins", "Recursive"
         ]
         
+        # Inject Google Fonts CSS
+        families = "&family=".join([f.replace(' ', '+') for f in google_fonts])
+        ui.add_head_html(f'<link href="https://fonts.googleapis.com/css2?family={families}&display=swap" rel="stylesheet">')
+
         # Combine with local fonts
         self._all_font_opts = []
         for name in self.registry.fonts:
              self._all_font_opts.append({
                  'label': name, 
                  'font': name,
-                 'value': name
+                 'value': name,
+                 'icon': 'computer'
              })
         
         for name in google_fonts:
@@ -40,7 +51,8 @@ class theme_config(ui.column):
                   self._all_font_opts.append({
                       'label': name,
                       'font': name,
-                      'value': name
+                      'value': name,
+                      'icon': 'google'
                   })
         
         palette_options = []

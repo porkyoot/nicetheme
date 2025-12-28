@@ -39,7 +39,7 @@ class select(ui.select):
         # Setup search/filter
         if on_filter:
             self._on_filter_cb = on_filter
-            self.props('use-input fill-input input-debounce="0" hide-selected')
+            self.props('use-input input-debounce="0"')
             self.on('input-value', self._handle_filter)
             self.on('click', self._handle_click)
 
