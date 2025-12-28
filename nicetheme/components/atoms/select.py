@@ -14,9 +14,7 @@ class select(ui.select):
         
         # Normalize list of dicts to dict for NiceGUI
         if isinstance(options, list) and options and isinstance(options[0], dict):
-            # We map Value -> Label (which can be a rich dict)
-            # This ensures props.opt.label in Quasar is the label struct, not the whole option struct.
-            options = {(opt.get('value') or opt.get('label')): opt.get('label') for opt in options if opt.get('value') or opt.get('label')}
+            options = {(opt.get('value') or opt.get('label')): opt for opt in options if opt.get('value') or opt.get('label')}
 
         # Extract value from dict if passed
         if 'value' in kwargs and isinstance(kwargs['value'], dict):
@@ -35,6 +33,8 @@ class select(ui.select):
             self._setup_rich_slots()
             self.props(r':option-label="(opt) => opt.label && opt.label.label ? opt.label.label : (opt.label || opt)"')
             
+        # Apply structural props
+        self.props('popup-content-class="nd-select-menu"')
         
         # Setup search/filter
         if on_filter:
@@ -45,7 +45,7 @@ class select(ui.select):
 
         # Icon-only mode
         if icon_only:
-            self.classes('nt-hide-label nt-mode-icon-only')
+            self.classes('nd-hide-label nd-mode-icon-only')
             
         # Prepend slot
         if prepend:
@@ -69,20 +69,12 @@ class select(ui.select):
         ''')
 
         self.add_slot('selected-item', r'''
-            <div class="row items-center no-wrap gap-2" v-if="props.opt && (props.opt.label || props.opt.icon || props.opt.html)">
-                 <!-- Handle case where props.opt is the rich label itself or wrapped in {label: ...} -->
-                <div v-if="props.opt.html || (props.opt.label && props.opt.label.html)" v-html="props.opt.html || props.opt.label.html"></div>
-                <q-icon v-else-if="props.opt.icon || (props.opt.label && props.opt.label.icon)" 
-                        :name="props.opt.icon || props.opt.label.icon" 
-                        :color="props.opt.color || (props.opt.label && props.opt.label.color)" 
-                        size="sm" />
-                <q-item-label v-if="props.opt.label || (props.opt.label && props.opt.label.label)" 
-                              :style="(props.opt.font || (props.opt.label && props.opt.label.font)) ? { 'font-family': (props.opt.font || props.opt.label.font) } : {}">
-                    {{ (typeof props.opt.label === 'string' ? props.opt.label : props.opt.label.label) || props.opt.label }}
+            <div class="row items-center no-wrap gap-2" v-if="props.opt && props.opt.label">
+                <div v-if="props.opt.label.html" v-html="props.opt.label.html"></div>
+                <q-icon v-else-if="props.opt.label.icon" :name="props.opt.label.icon" :color="props.opt.label.color" size="sm" />
+                <q-item-label :style="props.opt.label.font ? { 'font-family': props.opt.label.font } : {}">
+                    {{ props.opt.label.label }}
                 </q-item-label>
-            </div>
-            <div v-else>
-                {{ props.opt ? (props.opt.label || props.opt) : '' }}
             </div>
         ''')
 
@@ -90,7 +82,6 @@ class select(ui.select):
         """Clear input and show all options on click"""
         self.run_method('updateInputValue', '')
         self._do_filter('')
-        self.run_method('showPopup')
 
     def _handle_filter(self, e):
         """Handle server-side filtering when user types"""

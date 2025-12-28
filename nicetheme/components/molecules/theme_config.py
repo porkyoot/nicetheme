@@ -30,14 +30,16 @@ class theme_config(ui.column):
         self._all_font_opts = []
         for name in self.registry.fonts:
              self._all_font_opts.append({
-                 'label': {'label': name, 'font': name},
+                 'label': name, 
+                 'font': name,
                  'value': name
              })
         
         for name in google_fonts:
              if not any(o['value'] == name for o in self._all_font_opts):
                   self._all_font_opts.append({
-                      'label': {'label': name, 'font': name},
+                      'label': name,
+                      'font': name,
                       'value': name
                   })
         
@@ -48,10 +50,8 @@ class theme_config(ui.column):
                  # Use light mode palette for the icon preview
                  icon_palette = palette_set.get('light') or next(iter(palette_set.values()))
                  palette_options.append({
-                     'label': {
-                         'label': name.title(), 
-                         'html': palette_icon.to_html(icon_palette, size="24px")
-                     },
+                     'label': name.title(), 
+                     'html': palette_icon.to_html(icon_palette, size="24px"),
                      'value': name
                  })
         
