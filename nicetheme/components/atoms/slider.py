@@ -52,7 +52,7 @@ class split_slider(ui.element):
                 # Left Slider (Reverse Mode)
                 self.slider_left = ui.slider(min=0, max=limit, step=step, value=value_left, on_change=self._handle_change_left)
                 # 'reverse' prop makes 0 be at the right side.
-                self.slider_left.props(f'reverse label track-size="4px" thumb-size="16px" :label-value="modelValue.toFixed(1)"')
+                self.slider_left.props(f'reverse label track-size="4px" thumb-size="16px"')
                 
                 # Apply color (handle hex or var)
                 if color_left.startswith('#') or color_left.startswith('var('):
@@ -69,7 +69,7 @@ class split_slider(ui.element):
             with ui.row().classes('col flex items-center justify-start relative-position px-0').style('height: 32px;'):
                 # Right Slider (Normal Mode)
                 self.slider_right = ui.slider(min=0, max=limit, step=step, value=value_right, on_change=self._handle_change_right)
-                self.slider_right.props(f'label track-size="4px" thumb-size="16px" :label-value="modelValue.toFixed(1)"')
+                self.slider_right.props(f'label track-size="4px" thumb-size="16px"')
                 
                 # Apply color (handle hex or var)
                 if color_right.startswith('#') or color_right.startswith('var('):

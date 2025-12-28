@@ -46,6 +46,7 @@ class Texture:
     shadow_intensity: float
     highlight_intensity: float
     opacity: float
+    blur: int
     border_width: float
     css: str = ""
 

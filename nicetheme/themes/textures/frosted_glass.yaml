@@ -1,5 +1,6 @@
 shadow_intensity: 0.2
 highlight_intensity: 0.8
 opacity: 0.8
+blur: 10
 border_width: 1.0
 css: ".frosted { backdrop-filter: blur(10px); }"

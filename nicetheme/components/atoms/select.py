@@ -69,12 +69,20 @@ class select(ui.select):
         ''')
 
         self.add_slot('selected-item', r'''
-            <div class="row items-center no-wrap gap-2" v-if="props.opt && props.opt.label">
-                <div v-if="props.opt.label.html" v-html="props.opt.label.html"></div>
-                <q-icon v-else-if="props.opt.label.icon" :name="props.opt.label.icon" :color="props.opt.label.color" size="sm" />
-                <q-item-label :style="props.opt.label.font ? { 'font-family': props.opt.label.font } : {}">
-                    {{ props.opt.label.label }}
+            <div class="row items-center no-wrap gap-2" v-if="props.opt && (props.opt.label || props.opt.icon || props.opt.html)">
+                 <!-- Handle case where props.opt is the rich label itself or wrapped in {label: ...} -->
+                <div v-if="props.opt.html || (props.opt.label && props.opt.label.html)" v-html="props.opt.html || props.opt.label.html"></div>
+                <q-icon v-else-if="props.opt.icon || (props.opt.label && props.opt.label.icon)" 
+                        :name="props.opt.icon || props.opt.label.icon" 
+                        :color="props.opt.color || (props.opt.label && props.opt.label.color)" 
+                        size="sm" />
+                <q-item-label v-if="props.opt.label || (props.opt.label && props.opt.label.label)" 
+                              :style="(props.opt.font || (props.opt.label && props.opt.label.font)) ? { 'font-family': (props.opt.font || props.opt.label.font) } : {}">
+                    {{ (typeof props.opt.label === 'string' ? props.opt.label : props.opt.label.label) || props.opt.label }}
                 </q-item-label>
+            </div>
+            <div v-else>
+                {{ props.opt ? (props.opt.label || props.opt) : '' }}
             </div>
         ''')
 
@@ -82,6 +90,7 @@ class select(ui.select):
         """Clear input and show all options on click"""
         self.run_method('updateInputValue', '')
         self._do_filter('')
+        self.run_method('showPopup')
 
     def _handle_filter(self, e):
         """Handle server-side filtering when user types"""
