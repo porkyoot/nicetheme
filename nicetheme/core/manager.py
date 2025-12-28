@@ -152,3 +152,11 @@ class ThemeManager:
             ui.add_head_html(f"<style>{css_content}</style>")
         else:
             print(f"Warning: icons.css not found at {icons_css_path}")
+
+        sliders_css_path = os.path.join(assets_dir, 'sliders.css')
+        if os.path.exists(sliders_css_path):
+            with open(sliders_css_path, 'r') as f:
+                css_content = f.read()
+            ui.add_head_html(f"<style>{css_content}</style>")
+        else:
+            print(f"Warning: sliders.css not found at {sliders_css_path}")

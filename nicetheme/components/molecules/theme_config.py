@@ -121,7 +121,7 @@ class theme_config(ui.column):
                         # Primary Accent
                         ui.label('Primary Accent').classes('text-xs opacity-60 font-bold mb-1')
                         self._primary_accent_slider = palette_slider(
-                            colors=list(self._palette.colors.values()) or ["#002b36", "#fdf6e3"],
+                            colors=self._palette.colors,
                             value=self._palette.primary,
                             on_change=self._update_primary_accent
                         )
@@ -129,7 +129,7 @@ class theme_config(ui.column):
                         # Secondary Accent
                         ui.label('Secondary Accent').classes('text-xs opacity-60 font-bold mb-1')
                         self._secondary_accent_slider = palette_slider(
-                            colors=list(self._palette.colors.values()) or ["#002b36", "#fdf6e3"],
+                            colors=self._palette.colors,
                             value=self._palette.secondary,
                             on_change=self._update_secondary_accent
                         )
@@ -145,12 +145,12 @@ class theme_config(ui.column):
 
     def _update_primary_accent(self, color: str):
         self._palette.primary = color
-        if self.manager:
+        if self.manager and self.manager.theme:
              self.manager.apply(self.manager.theme) # Re-apply theme if possible
         ui.notify(f'Primary updated to {color}')
 
     def _update_secondary_accent(self, color: str):
         self._palette.secondary = color
-        if self.manager:
+        if self.manager and self.manager.theme:
              self.manager.apply(self.manager.theme)
         ui.notify(f'Secondary updated to {color}')

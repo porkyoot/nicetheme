@@ -111,109 +111,95 @@ class palette_slider(ui.element):
     A horizontal color selection bar resembling a slider.
     Displays a set of colors and emphasizes the selected one by expanding it.
     Ideal for selecting a color from a palette (e.g., 8 accent colors).
-    
-    Visual Structure:
-    [  ][  ][    SELECTED    ][  ][  ]
     """
     def __init__(self, 
-                 colors: list,
-                 value: Optional[str] = None, 
-                 height: str = '12px',
+                 colors: Dict[str, str],
+                 value: str,
                  on_change: Optional[Callable[[str], None]] = None):
         super().__init__('div')
-        # Container styling
-        self.classes('relative w-full rounded-full overflow-hidden flex row no-wrap cursor-pointer select-none')
-        self.style(f'height: {height}; box-shadow: var(--nd-shadow-sm);')
+        self.classes('relative w-full nt-palette-slider-container')
+        self.style('height: 32px;') # Ensure container has height
         
-        # Validations
-        if not colors:
-             colors = ['#cccccc'] # Fallback
-             
-        self._colors = colors
-        self._value = value if value in colors else colors[0]
+        self._color_list = list(colors.values())
+        self._color_names = list(colors.keys())
         self._on_change = on_change
-        self._items = {} # Map color -> element
-        self._dragging = False
         
-        # Global mouseup listener to stop dragging even if released outside the component
-        self.on('window:mouseup', self._handle_mouseup)
-        
-        self._render_items()
-
-    def _render_items(self):
-        self.clear()
-        self._items = {}
+        # Initial index
+        try:
+            initial_index = self._color_list.index(value)
+        except ValueError:
+            initial_index = 0
+            
         with self:
-            for color in self._colors:
-                # We use specific flex styles for animation
-                # Flex-1 for unselected, Flex-4 for selected
-                is_selected = (color == self._value)
-                flex_val = '4' if is_selected else '1'
-                
-                item = ui.element('div').classes('h-full transition-all duration-300 ease-out relative hover:opacity-90')
-                item.style(f'background-color: {color}; flex: {flex_val};')
-                
-                # Selection indicator
-                if is_selected:
-                    self._inject_indicator(item)
-                
-                # Drag events
-                # Use .stop to prevent browser drag/selection behaviors
-                item.on('mousedown.stop', lambda _, c=color: self._handle_mousedown(c))
-                item.on('mouseenter', lambda _, c=color: self._handle_mouseenter(c))
-                
-                self._items[color] = item
+            # The Overlay (Lower Z-Index)
+            self._overlay = ui.element('div').classes('nt-palette-slider-overlay')
+            with self._overlay:
+                self._render_items(initial_index)
+            
+            # The Slider (Higher Z-Index, Transparent Track)
+            self._slider = ui.slider(min=0, max=max(0, len(self._color_list) - 1), value=initial_index)
+            self._slider.classes('absolute-full nt-palette-slider')
+            self._slider.props('track-size=0px height=32px') # Match container height
+            self._slider.on_value_change(self._handle_slider_change)
 
-    def _handle_mousedown(self, color: str):
-        self._dragging = True
-        self.set_value(color)
+    @property
+    def value(self) -> int:
+        return self._slider.value
 
-    def _handle_mouseenter(self, color: str):
-        if self._dragging:
-            self.set_value(color)
+    @value.setter
+    def value(self, v: int):
+        self._slider.value = v
 
-    def _handle_mouseup(self):
-        self._dragging = False
+    def _render_items(self, current_index: int):
+        self._items = []
+        for i, color in enumerate(self._color_list):
+            is_selected = (i == current_index)
+            flex_val = '4' if is_selected else '1'
+            
+            item = ui.element('div').classes('h-full transition-all duration-300 ease-out relative')
+            item.style(f'background-color: {color}; flex: {flex_val};')
+            
+            # Selection indicator
+            if is_selected:
+                self._inject_indicator(item)
+            
+            self._items.append(item)
 
     def _inject_indicator(self, container):
         with container:
-            # A subtle dot to indicate active state clearly
              ui.element('div').classes('absolute-center w-1.5 h-1.5 rounded-full bg-white/90 ring-1 ring-black/10').style('box-shadow: var(--nd-shadow-sm);')
 
-    def set_value(self, value: str):
-        if value == self._value:
-            return
-        if value not in self._items:
-            # If the value is not in our keys, try to find it or ignore
-            if value not in self._colors:
-                return
-            
-        self._value = value
-        self._update_selection_visuals()
-                
+    def _handle_slider_change(self, e):
+        self._update_selection_visuals(int(e.value))
         if self._on_change:
-            self._on_change(value)
+            self._on_change(self._color_list[int(e.value)])
 
-    def set_colors(self, colors: list, value: Optional[str] = None):
+    def set_colors(self, colors: Dict[str, str], value: Optional[str] = None):
         """Updates the available colors and optionally the current value."""
-        self._colors = colors
+        self._color_list = list(colors.values())
+        self._color_names = list(colors.keys())
+        
+        self._slider.props(f'max={max(0, len(self._color_list) - 1)}')
+        
         if value:
-            self._value = value
-        elif self._value not in colors:
-            self._value = colors[0] if colors else None
+            try:
+                self._slider.value = self._color_list.index(value)
+            except ValueError:
+                self._slider.value = 0
+        elif self._slider.value >= len(self._color_list):
+            self._slider.value = 0
             
-        self._render_items()
+        self._overlay.clear()
+        with self._overlay:
+            self._render_items(int(self._slider.value))
 
-    def _update_selection_visuals(self):
+    def _update_selection_visuals(self, current_index: int):
         """Updates the transition and selection indicators without full re-render."""
-        for color, item in self._items.items():
-            item.clear() # Remove any indicators
-            
-            if color == self._value:
-                # Expand
-                item.style(f'background-color: {color}; flex: 4;')
+        for i, item in enumerate(self._items):
+            item.clear()
+            if i == current_index:
+                item.style(f'flex: 4;')
                 self._inject_indicator(item)
             else:
-                # Contract
-                item.style(f'background-color: {color}; flex: 1;')
+                item.style(f'flex: 1;')
 
