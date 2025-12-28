@@ -29,8 +29,9 @@ class theme_config(ui.column):
             "Titillium Web", "Inconsolata", "Barlow", "Dosis", "Cabin",
             "Bitter", "Anton", "Oxygen", "Arvo", "Libre Baskerville", "Lobster",
             "Pacifico", "Shadows Into Light", "Dancing Script", "Bebas Neue",
-            "Poppins", "Recursive"
+            "Poppins", "Recursive", "Sniglet"
         ]
+        google_fonts.sort()
         
         # Inject Google Fonts CSS
         families = "&family=".join([f.replace(' ', '+') for f in google_fonts])
@@ -43,16 +44,21 @@ class theme_config(ui.column):
                  'label': name, 
                  'font': name,
                  'value': name,
+                 'origin': 'local',
                  'icon': 'computer'
              })
         
+        # Simple Google "G" Icon (MDI path)
+        google_svg = '<svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: currentColor;"><path d="M21.35,11.1H12.18V13.83H18.69C18.36,17.64 15.19,19.27 12.19,19.27C8.36,19.27 5,16.25 5,12C5,7.9 8.2,4.73 12.2,4.73C15.29,4.73 17.1,6.7 17.1,6.7L19,4.72C19,4.72 16.56,2 12.1,2C6.42,2 2.03,6.8 2.03,12C2.03,17.05 6.16,22 12.25,22C17.6,22 21.5,18.33 21.5,12.91C21.5,11.76 21.35,11.1 21.35,11.1V11.1Z"/></svg>'
+
         for name in google_fonts:
              if not any(o['value'] == name for o in self._all_font_opts):
                   self._all_font_opts.append({
                       'label': name,
                       'font': name,
                       'value': name,
-                      'icon': 'google'
+                      'origin': 'google',
+                      'html': google_svg
                   })
         
         palette_options = []
@@ -158,20 +164,20 @@ class theme_config(ui.column):
 
                     # Row 3: Blur / Opacity
                     with ui.row().classes('w-full gap-4'):
-                        with ui.column().classes('col gap-1'):
-                            ui.label('Blur').classes('text-[10px] opacity-60 font-bold uppercase tracking-wider')
-                            self._blur_slider = slider(min=0, max=40, step=1, on_change=self._update_blur)
-                            
+
                         with ui.column().classes('col gap-1'):
                             ui.label('Opacity').classes('text-[10px] opacity-60 font-bold uppercase tracking-wider')
                             self._opacity_slider = slider(min=0, max=1, step=0.01, on_change=self._update_opacity)
 
-                    # Row 4: Border Width
-                    with ui.column().classes('w-full gap-1'):
-                        ui.label('Border Width').classes('text-[10px] opacity-60 font-bold uppercase tracking-wider')
-                        self._border_slider = slider(
-                            min=0, max=10, step=0.5, 
-                            on_change=self._update_border_width
+                        with ui.column().classes('col gap-1') as self._blur_container:
+                            ui.label('Blur').classes('text-[10px] opacity-60 font-bold uppercase tracking-wider')
+                            self._blur_slider = slider(min=0, max=40, step=1, on_change=self._update_blur)
+
+                        with ui.column().classes('col gap-1'):
+                            ui.label('Border Width').classes('text-[10px] opacity-60 font-bold uppercase tracking-wider')
+                            self._border_slider = slider(
+                                min=0, max=10, step=0.5, 
+                                on_change=self._update_border_width
                         )
 
                 with ui.tab_panel('Typography').classes('gap-4 column'):
@@ -191,24 +197,26 @@ class theme_config(ui.column):
                             on_filter=self._filter_fonts
                         ).classes('w-full')
 
-                    # Font Scale
-                    with ui.column().classes('w-full gap-1'):
-                        ui.label('Font Scale').classes('text-[10px] opacity-60 font-bold uppercase tracking-wider')
-                        self._font_scale_slider = slider(
-                            min=0.5, max=2.0, step=0.05, 
-                            on_change=self._update_font_scale
-                        )
+                    # Font Scale & Case Toggle
+                    with ui.row().classes('w-full gap-4'):
+                        # Font Scale
+                        with ui.column().classes('col gap-1'):
+                            ui.label('Font Scale').classes('text-[10px] opacity-60 font-bold uppercase tracking-wider')
+                            self._font_scale_slider = slider(
+                                min=0.5, max=2.0, step=0.05, 
+                                on_change=self._update_font_scale
+                            )
 
-                    # Case Toggle
-                    with ui.column().classes('w-full gap-1'):
-                        ui.label('Text Case').classes('text-[10px] opacity-60 font-bold uppercase tracking-wider')
-                        case_opts = [
-                            {'value': 'none', 'icon': 'block', 'label': None},
-                            {'value': 'lowercase', 'label': 'aa'},
-                            {'value': 'title_case', 'label': 'Aa'},
-                            {'value': 'uppercase', 'label': 'AA'},
-                        ]
-                        self._case_toggle = toggle(case_opts, on_change=self._update_text_case)
+                        # Case Toggle
+                        with ui.column().classes('gap-1'):
+                            ui.label('Text Case').classes('text-[10px] opacity-60 font-bold uppercase tracking-wider')
+                            case_opts = [
+                                {'value': 'none', 'icon': 'block', 'label': None, 'tooltip': 'No text transformation'},
+                                {'value': 'lowercase', 'label': 'aa', 'tooltip': 'Convert to lowercase'},
+                                {'value': 'titlecase', 'label': 'Aa', 'tooltip': 'Convert to Title Case'},
+                                {'value': 'uppercase', 'label': 'AA', 'tooltip': 'Convert to UPPERCASE'},
+                            ]
+                            self._case_toggle = toggle(case_opts, on_change=self._update_text_case).props('no-caps')
 
         # Sync with manager
         self.manager.on_change(self._update_ui)
@@ -252,8 +260,7 @@ class theme_config(ui.column):
                 self._opacity_slider.value = tex.opacity
                 self._border_slider.value = tex.border_width
                 
-                # Disable blur if opacity is 0
-                self._blur_slider.disable() if tex.opacity == 0 else self._blur_slider.enable()
+                self._blur_container.set_visibility(tex.opacity < 1)
 
             # 6. Update Typography UI
             if self.manager.theme and self.manager.theme.typography:
@@ -317,7 +324,7 @@ class theme_config(ui.column):
         if self._updating: return
         if self.manager.theme and self.manager.theme.texture:
             self.manager.theme.texture.opacity = e.value
-            self._blur_slider.disable() if e.value == 0 else self._blur_slider.enable()
+            self._blur_container.set_visibility(e.value < 1)
             self.manager.apply()
 
     def _update_border_width(self, e):

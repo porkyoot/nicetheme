@@ -1,7 +1,7 @@
 from nicegui import ui
 from typing import Dict, Any, Optional, List, Union
 
-class toggle(ui.toggle):
+class _RichToggle(ui.toggle):
     def __init__(self, options: Union[List, Dict], color_map: Optional[Dict[Any, str]] = None, **kwargs):
         """
         A toggle component that supports different active colors per option and rich option structures.
@@ -62,7 +62,44 @@ class toggle(ui.toggle):
         if self.value in self._color_map:
              self.props(f'toggle-color={self._color_map[self.value]}')
         else:
-             # revert to default if no specific color mapped, or handle as needed
-             # For now, we assume if color_map is used, all values might want one, 
-             # or we let Quasar's default take over (which might be primary).
              pass 
+
+class toggle(ui.element):
+    def __init__(self, options: Union[List, Dict], color_map: Optional[Dict[Any, str]] = None, on_change=None, **kwargs):
+        super().__init__('div')
+        self.classes('relative-position inline-block')
+        
+        # Generate unique identifier for targeting
+        # We use a unique class instead of ID to be safe with NiceGUI's ID management
+        unique_cls = f'toggle-{self.id}'
+        
+        self.inner = _RichToggle(options, color_map=color_map, on_change=on_change, **kwargs)
+        self.inner.classes(unique_cls)
+        self.inner.move(self)
+        
+        # Initial tooltips setup
+        if isinstance(options, list) and options and isinstance(options[0], dict):
+             for i, opt in enumerate(options):
+                 tooltip_text = opt.get('tooltip')
+                 if tooltip_text:
+                     with self:
+                         # Target the Nth button within the inner toggle
+                         # .q-btn-group is the root of q-btn-toggle
+                         ui.tooltip(tooltip_text).props(f'target=".{unique_cls} > .q-btn:nth-child({i+1})"')
+
+    def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> 'toggle':
+        self.inner.props(add, remove=remove)
+        return self
+
+
+    @property
+    def value(self):
+        return self.inner.value
+    
+    @value.setter
+    def value(self, val):
+        self.inner.value = val
+
+    def on_value_change(self, callback):
+        self.inner.on_value_change(callback)
+        return self 
