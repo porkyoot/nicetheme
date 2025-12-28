@@ -64,11 +64,12 @@ class Typography:
 
 @dataclass
 class Theme:
-    palettes: Dict[str, Palette]
+    palettes: Dict[str, Dict[str, Palette]]
     texture: Texture
     layout: Layout
     typography: Typography
 
-    @property
-    def palette(self) -> Palette:
-        return self.palettes.get('light') or next(iter(self.palettes.values()))
+    def get_palette(self, name: str, mode: str) -> Optional[Palette]:
+        palette_set = self.palettes.get(name)
+        if not palette_set: return None
+        return palette_set.get(mode)

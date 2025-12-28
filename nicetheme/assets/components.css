@@ -1,0 +1,19 @@
+/* CSS for the tab animation */
+.nt-tab-label {
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-width 0.3s ease, opacity 0.3s ease, margin-left 0.3s ease;
+    white-space: nowrap;
+    font-size: 0.875rem; /* text-sm */
+    font-weight: 500;
+}
+.q-tab--active .nt-tab-label {
+    max-width: 150px;
+    opacity: 1;
+    margin-left: 8px;
+}
+.q-tab__content {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+}

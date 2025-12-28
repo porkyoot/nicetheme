@@ -1,0 +1,9 @@
+theme:
+  palette: solarized
+  layout: relaxed
+  texture: flat
+  typography:
+    primary: recursive
+    secondary: recursive
+    scale: 1
+    title_case: titlecase

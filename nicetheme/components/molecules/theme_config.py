@@ -1,5 +1,5 @@
 from nicegui import ui
-from typing import Optional
+from typing import Optional, List, Dict
 from nicetheme.components.atoms.tab import tab
 from nicetheme.components.atoms.toggle import toggle
 from nicetheme.components.atoms.select import select
@@ -20,7 +20,7 @@ class theme_config(ui.column):
         self._palette: Optional[Palette] = None
         self._updating = False
 
-        # Curated list of Google Fonts
+        # Curated list of Google Fonts - kept for UI options
         google_fonts = [
             "Roboto", "Open Sans", "Noto Sans JP", "Inter", "Lato", "Montserrat", 
             "Oswald", "Source Sans Pro", "Slabo 27px", "Raleway", "PT Sans", 
@@ -33,10 +33,6 @@ class theme_config(ui.column):
         ]
         google_fonts.sort()
         
-        # Inject Google Fonts CSS
-        families = "&family=".join([f.replace(' ', '+') for f in google_fonts])
-        ui.add_head_html(f'<link href="https://fonts.googleapis.com/css2?family={families}&display=swap" rel="stylesheet">')
-
         # Combine with local fonts
         self._all_font_opts = []
         for name in self.registry.fonts:
@@ -72,30 +68,6 @@ class theme_config(ui.column):
                      'html': palette_icon.to_html(icon_palette, size="24px"),
                      'value': name
                  })
-        
-        # CSS for the tab animation
-        ui.add_head_html('''
-            <style>
-                .nt-tab-label {
-                    max-width: 0;
-                    opacity: 0;
-                    overflow: hidden;
-                    transition: max-width 0.3s ease, opacity 0.3s ease, margin-left 0.3s ease;
-                    white-space: nowrap;
-                    font-size: 0.875rem; /* text-sm */
-                    font-weight: 500;
-                }
-                .q-tab--active .nt-tab-label {
-                    max-width: 150px;
-                    opacity: 1;
-                    margin-left: 8px;
-                }
-                .q-tab__content {
-                    flex-direction: row !important;
-                    flex-wrap: nowrap !important;
-                }
-            </style>
-        ''')
         
         with self:
             with ui.tabs().classes('w-full') as tabs:
@@ -229,14 +201,11 @@ class theme_config(ui.column):
                         ui.label('Density').classes('text-[10px] opacity-60 font-bold uppercase tracking-wider')
                         self._density_slider = slider(min=0.5, max=1.5, step=0.05, on_change=self._update_density)
                     
-               
-                    
-
         # Sync with manager
-        self.manager.on_change(self._update_ui)
-        self._update_ui()
+        self.manager.bind(self._update_ui)
+        self._update_ui(self.manager)
 
-    def _update_ui(self):
+    def _update_ui(self, manager: ThemeManager):
         """Updates the UI components based on the manager's current state."""
         if not self.manager.theme:
             return
@@ -245,19 +214,13 @@ class theme_config(ui.column):
         try:
             
             # 1. Update Mode Toggle
-            self._mode_toggle.value = self.manager._mode
+            self._mode_toggle.value = self.manager.mode
             
             # 2. Update Palette Select
             self._palette_select.value = self.manager.active_palette_name
             
             # 3. Resolve actual Palette object based on mode
-            effective_mode = self.manager._mode
-            if effective_mode == 'auto':
-                effective_mode = 'light' # Simple fallback
-                
-            palette_set = self.registry.palettes.get(self.manager.active_palette_name)
-            if palette_set:
-                self._palette = palette_set.get(effective_mode)
+            self._palette = self.manager.get_active_palette()
                 
             if self._palette:
                 # 4. Update Sliders
@@ -281,7 +244,7 @@ class theme_config(ui.column):
                 self._font_primary_select.value = typo.primary
                 self._font_secondary_select.value = typo.secondary
                 self._font_scale_slider.value = typo.scale
-                self._font_scale_slider.value = typo.scale
+                # self._font_scale_slider.value = typo.scale # Duplicate line removed
                 self._case_toggle.value = typo.title_case
 
             # 7. Update Layout UI
@@ -296,11 +259,7 @@ class theme_config(ui.column):
 
     def _handle_palette_change(self, e):
         if self._updating: return
-        self.manager.active_palette_name = e.value
-        palette_set = self.registry.palettes.get(e.value)
-        if palette_set and self.manager.theme:
-            self.manager.theme.palettes = palette_set
-            self.manager.apply()
+        self.manager.set_palette(e.value)
 
     def _handle_mode_change(self, e):
         if self._updating: return
@@ -308,16 +267,15 @@ class theme_config(ui.column):
 
     def _update_primary_accent(self, color: str):
         if self._updating: return
-        if self._palette:
-            self._palette.primary = color
-            self.manager.apply()
+        # Using specific method
+        self.manager.update_primary_color(color)
         ui.notify(f'Primary updated to {color}')
 
     def _update_secondary_accent(self, color: str):
         if self._updating: return
         if self._palette:
             self._palette.secondary = color
-            self.manager.apply()
+            self.manager.refresh()
         ui.notify(f'Secondary updated to {color}')
 
     def _handle_texture_change(self, e):
@@ -325,46 +283,45 @@ class theme_config(ui.column):
         texture = self.registry.textures.get(e.value)
         if texture and self.manager.theme:
             self.manager.theme.texture = texture
-            self.manager.apply()
-            self._update_ui()
+            self.manager.refresh()
 
     def _update_shadow_highlight(self, values: dict):
         if self._updating: return
         if self.manager.theme and self.manager.theme.texture:
             self.manager.theme.texture.shadow_intensity = values['left']
             self.manager.theme.texture.highlight_intensity = values['right']
-            self.manager.apply()
+            self.manager.refresh()
 
     def _update_blur(self, e):
         if self._updating: return
         if self.manager.theme and self.manager.theme.texture:
             self.manager.theme.texture.blur = int(e.value)
-            self.manager.apply()
+            self.manager.refresh()
 
     def _update_opacity(self, e):
         if self._updating: return
         if self.manager.theme and self.manager.theme.texture:
             self.manager.theme.texture.opacity = e.value
             self._blur_container.set_visibility(e.value < 1)
-            self.manager.apply()
+            self.manager.refresh()
 
     def _update_border(self, e):
         if self._updating: return
         if self.manager.theme and self.manager.theme.layout:
             self.manager.theme.layout.border = e.value
-            self.manager.apply()
+            self.manager.refresh()
 
     def _update_roundness(self, e):
         if self._updating: return
         if self.manager.theme and self.manager.theme.layout:
             self.manager.theme.layout.roundness = e.value
-            self.manager.apply()
+            self.manager.refresh()
 
     def _update_density(self, e):
         if self._updating: return
         if self.manager.theme and self.manager.theme.layout:
             self.manager.theme.layout.density = e.value
-            self.manager.apply()
+            self.manager.refresh()
 
     def _filter_fonts(self, value: str):
         if not value:
@@ -376,27 +333,24 @@ class theme_config(ui.column):
         if not self.manager.theme or not font_name:
             return
             
-        # Check if it's a Google Font (not in registry.fonts)
-        if font_name not in self.registry.fonts:
-            # Inject Google Font
-            font_family = font_name.replace(' ', '+')
-            ui.add_head_html(f'<link href="https://fonts.googleapis.com/css2?family={font_family}&display=swap" rel="stylesheet">')
+        # UI doesn't inject CSS anymore, Bridge handles "loading" fonts? 
+        # Bridge loads ALL fonts at init. So we just set the value.
             
         if is_main:
             self.manager.theme.typography.primary = font_name
         else:
             self.manager.theme.typography.secondary = font_name
             
-        self.manager.apply()
+        self.manager.refresh()
 
     def _update_font_scale(self, e):
         if self._updating: return
         if self.manager.theme and self.manager.theme.typography:
             self.manager.theme.typography.scale = float(e.value)
-            self.manager.apply()
+            self.manager.refresh()
 
     def _update_text_case(self, e):
         if self._updating: return
         if self.manager.theme and self.manager.theme.typography:
             self.manager.theme.typography.title_case = e.value
-            self.manager.apply()
+            self.manager.refresh()

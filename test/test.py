@@ -5,6 +5,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from nicegui import ui
 from nicetheme.core.manager import ThemeManager
+from nicetheme.core.bridge import ThemeBridge
 from nicetheme.core.registry import ThemeRegistry
 from nicetheme.core.themes import Theme, Typography, Palette, Texture, Layout
 from nicetheme.components.atoms.button import button, select_button
@@ -15,17 +16,19 @@ from nicetheme.components.molecules.theme_config import theme_config
 # Initialize Registry and Manager
 registry = ThemeRegistry(None)
 manager = ThemeManager()
+bridge = ThemeBridge(manager, registry)
 
 # Setup Defaults if Registry is empty or to ensure we have a valid theme
 def get_default_theme() -> Theme:
     # Palette
-    palette_name = 'solarized'
     if registry.palettes:
-        if palette_name not in registry.palettes:
-            palette_name = next(iter(registry.palettes.keys()))
-        palettes = registry.palettes[palette_name]
+        palettes = registry.palettes
+        # Ensure manager has a valid active palette name
+        default_name = 'solarized' if 'solarized' in registry.palettes else next(iter(registry.palettes.keys()))
+        manager.set_palette(default_name)
     else:
-        palette_name = 'default'
+        # Fallback manual creation
+        print("Warning: No palettes in registry, using default fallback.")
         light_palette = Palette(
             name="default", mode="light",
             primary="#007bff", secondary="#6c757d",
@@ -44,21 +47,20 @@ def get_default_theme() -> Theme:
             content=["#ffffff", "#e0e0e0"], surface=["#121212", "#1e1e1e"],
             shadow="#000000", highlight="#333333", border="#444444"
         )
-        palettes = {'light': light_palette, 'dark': dark_palette}
-
-    manager.active_palette_name = palette_name
+        palettes = {'default': {'light': light_palette, 'dark': dark_palette}}
+        manager.set_palette('default')
 
     # Texture
     if registry.textures:
         texture = registry.textures.get('frosted_glass') or next(iter(registry.textures.values()))
     else:
-        texture = Texture(shadow_intensity=0.1, highlight_intensity=0.2, opacity=1.0, border_width=1.0, css="")
+        texture = Texture(shadow_intensity=0.1, highlight_intensity=0.2, opacity=1.0, blur=10, css="")
 
     # Layout
     if registry.layouts:
         layout = registry.layouts.get('relaxed') or next(iter(registry.layouts.values()))
     else:
-        layout = Layout(roundness=4.0, density=1.0)
+        layout = Layout(roundness=4.0, density=1.0, border=1.0)
 
     # Typography (Manual as it's not scanned fully)
     typography = Typography(primary="Roboto", secondary="sans-serif", scale=1.0, title_case="title_case")
@@ -66,7 +68,7 @@ def get_default_theme() -> Theme:
     return Theme(palettes=palettes, texture=texture, layout=layout, typography=typography)
 
 theme = get_default_theme()
-manager.apply(theme)
+manager.apply_theme(theme)
 
 # UI Showcase
 with ui.column().classes('w-full items-center p-8 gap-8 bg-gray-100 dark:bg-gray-900 min-h-screen'):
@@ -113,7 +115,9 @@ with ui.column().classes('w-full items-center p-8 gap-8 bg-gray-100 dark:bg-gray
         ui.label('Visual representations of theme components').classes('text-sm text-gray-500 mb-4')
         with ui.row().classes('gap-8 items-center justify-center bg-gray-50 p-8 rounded-lg'):
             with ui.column().classes('items-center gap-2'):
-                palette_icon(theme.palette, size="64px")
+                pal = manager.get_active_palette()
+                if pal:
+                    palette_icon(pal, size="64px")
                 ui.label('Palette').classes('text-xs text-gray-500')
 
     # Molecule: Theme Config
