@@ -73,6 +73,7 @@ class Layout:
 class Typography:
     primary: str
     secondary: str
+    mono: str
     scale: float
     title_case: Literal["lowercase", "title_case", "uppercase", "none"]
 

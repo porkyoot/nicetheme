@@ -64,7 +64,23 @@ h6,
 .text-5xl,
 .text-6xl,
 .text-7xl {
-    font-family: var(--nt-font-primary), monospace !important;
+    font-family: var(--nt-font-primary), sans-serif !important;
+}
+
+/* Monospace Font - Apply to inputs, code, and data displays */
+input,
+textarea,
+code,
+pre,
+.q-field__native,
+.q-input input,
+.q-textarea textarea,
+.monospace,
+.font-mono,
+kbd,
+samp,
+var {
+    font-family: var(--nt-font-mono), 'Courier New', Consolas, monospace !important;
 }
 
 /* Text Transform (Titles, Buttons, etc) */

@@ -63,7 +63,7 @@ def get_default_theme() -> Theme:
         layout = Layout(roundness=4.0, density=1.0, border=1.0)
 
     # Typography (Manual as it's not scanned fully)
-    typography = Typography(primary="Roboto", secondary="sans-serif", scale=1.0, title_case="title_case")
+    typography = Typography(primary="Roboto", secondary="sans-serif", mono="Courier New", scale=1.0, title_case="title_case")
 
     return Theme(palettes=palettes, texture=texture, layout=layout, typography=typography)
 

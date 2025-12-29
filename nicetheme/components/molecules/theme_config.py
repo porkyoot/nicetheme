@@ -57,6 +57,25 @@ class theme_config(ui.column):
                       'html': google_svg
                   })
         
+        # Add browser default fonts at the end
+        browser_fonts = [
+            ('serif', 'Serif'),
+            ('sans-serif', 'Sans-serif'),
+            ('monospace', 'Monospace'),
+            ('cursive', 'Cursive'),
+            ('fantasy', 'Fantasy'),
+            ('system-ui', 'System UI')
+        ]
+        
+        for value, label in browser_fonts:
+            self._all_font_opts.append({
+                'label': label,
+                'font': value,
+                'value': value,
+                'origin': 'browser',
+                'icon': 'language'  # Browser/globe icon
+            })
+        
         palette_options = []
         if self.registry and self.registry.palettes:
             # Build palette options for the select
@@ -148,40 +167,49 @@ class theme_config(ui.column):
                 with ui.tab_panel('Typography').classes('gap-4 column'):
                     # Font Selection
                     with ui.column().classes('w-full gap-2'):
-                        self._font_primary_select = select(
-                            options=self._all_font_opts,
-                            label='Primary Font',
-                            on_change=lambda e: self._update_font(e.value, is_main=True),
-                            on_filter=self._filter_fonts
-                        ).classes('w-full')
+                        # Primary Font and Text Case on same row
+                        with ui.row().classes('w-full gap-4'):
+                            self._font_primary_select = select(
+                                options=self._all_font_opts,
+                                label='Primary Font',
+                                on_change=lambda e: self._update_font(e.value, font_type='primary'),
+                                on_filter=self._filter_fonts
+                            ).classes('flex-1')
+                            
+                            # Text Case Toggle
+                            with ui.column().classes('gap-1'):
+                                ui.label('Text Case').classes('text-[10px] opacity-60 font-bold uppercase tracking-wider')
+                                case_opts = [
+                                    {'value': 'none', 'icon': 'block', 'label': None, 'tooltip': 'No text transformation'},
+                                    {'value': 'lowercase', 'label': 'aa', 'tooltip': 'Convert to lowercase'},
+                                    {'value': 'titlecase', 'label': 'Aa', 'tooltip': 'Convert to Title Case'},
+                                    {'value': 'uppercase', 'label': 'AA', 'tooltip': 'Convert to UPPERCASE'},
+                                ]
+                                self._case_toggle = toggle(case_opts, on_change=self._update_text_case).props('no-caps').classes('nt-case-toggle')
 
-                        self._font_secondary_select = select(
-                            options=self._all_font_opts,
-                            label='Secondary Font',
-                            on_change=lambda e: self._update_font(e.value, is_main=False),
-                            on_filter=self._filter_fonts
-                        ).classes('w-full')
+                        # Secondary and Mono on same row
+                        with ui.row().classes('w-full gap-4'):
+                            self._font_secondary_select = select(
+                                options=self._all_font_opts,
+                                label='Secondary Font',
+                                on_change=lambda e: self._update_font(e.value, font_type='secondary'),
+                                on_filter=self._filter_fonts
+                            ).classes('flex-1')
 
-                    # Font Scale & Case Toggle
-                    with ui.row().classes('w-full gap-4'):
-                        # Font Scale
-                        with ui.column().classes('col gap-1'):
-                            ui.label('Font Scale').classes('text-[10px] opacity-60 font-bold uppercase tracking-wider')
-                            self._font_scale_slider = slider(
-                                min=0.5, max=2.0, step=0.05, 
-                                on_change=self._update_font_scale
-                            )
+                            self._font_mono_select = select(
+                                options=self._all_font_opts,
+                                label='Mono Font',
+                                on_change=lambda e: self._update_font(e.value, font_type='mono'),
+                                on_filter=self._filter_fonts
+                            ).classes('flex-1')
 
-                        # Case Toggle
-                        with ui.column().classes('gap-1'):
-                            ui.label('Text Case').classes('text-[10px] opacity-60 font-bold uppercase tracking-wider')
-                            case_opts = [
-                                {'value': 'none', 'icon': 'block', 'label': None, 'tooltip': 'No text transformation'},
-                                {'value': 'lowercase', 'label': 'aa', 'tooltip': 'Convert to lowercase'},
-                                {'value': 'titlecase', 'label': 'Aa', 'tooltip': 'Convert to Title Case'},
-                                {'value': 'uppercase', 'label': 'AA', 'tooltip': 'Convert to UPPERCASE'},
-                            ]
-                            self._case_toggle = toggle(case_opts, on_change=self._update_text_case).props('no-caps').classes('nt-case-toggle')
+                    # Font Scale
+                    with ui.column().classes('w-full gap-1'):
+                        ui.label('Font Scale').classes('text-[10px] opacity-60 font-bold uppercase tracking-wider')
+                        self._font_scale_slider = slider(
+                            min=0.5, max=2.0, step=0.05, 
+                            on_change=self._update_font_scale
+                        )
 
                 with ui.tab_panel('Layout').classes('gap-4 column'):
                     # Row 1: Border & Roundness
@@ -265,10 +293,68 @@ class theme_config(ui.column):
             # 6. Update Typography UI
             if self.manager.theme and self.manager.theme.typography:
                 typo = self.manager.theme.typography
-                self._font_primary_select.value = typo.primary
-                self._font_secondary_select.value = typo.secondary
+                
+                # Helper to find or add a font option (case-insensitive, auto-loads Google Fonts)
+                fonts_added = False
+                def find_or_add_font(font_name: str) -> str:
+                    nonlocal fonts_added
+                    if not font_name:
+                        return ''
+                    
+                    # First try exact match
+                    for opt in self._all_font_opts:
+                        if opt.get('value') == font_name:
+                            return font_name
+                    
+                    # Try case-insensitive match
+                    font_lower = font_name.lower()
+                    for opt in self._all_font_opts:
+                        if opt.get('value', '').lower() == font_lower:
+                            return opt.get('value')
+                    
+                    # Not found - assume it's a Google Font and add it
+                    # Simple Google "G" Icon (MDI path)
+                    google_svg = '<svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: currentColor;"><path d="M21.35,11.1H12.18V13.83H18.69C18.36,17.64 15.19,19.27 12.19,19.27C8.36,19.27 5,16.25 5,12C5,7.9 8.2,4.73 12.2,4.73C15.29,4.73 17.1,6.7 17.1,6.7L19,4.72C19,4.72 16.56,2 12.1,2C6.42,2 2.03,6.8 2.03,12C2.03,17.05 6.16,22 12.25,22C17.6,22 21.5,18.33 21.5,12.91C21.5,11.76 21.35,11.1 21.35,11.1V11.1Z"/></svg>'
+                    
+                    # Add to options with proper casing (Title Case)
+                    title_cased = ' '.join(word.capitalize() for word in font_name.split())
+                    new_option = {
+                        'label': title_cased,
+                        'font': title_cased,
+                        'value': title_cased,
+                        'origin': 'google',
+                        'html': google_svg
+                    }
+                    self._all_font_opts.append(new_option)
+                    fonts_added = True
+                    
+                    # Inject the Google Font CSS
+                    font_url = title_cased.replace(' ', '+')
+                    ui.add_head_html(f'<link href="https://fonts.googleapis.com/css2?family={font_url}&display=swap" rel="stylesheet">')
+                    
+                    return title_cased
+                
+                # Find/add all fonts
+                primary_font = find_or_add_font(typo.primary)
+                secondary_font = find_or_add_font(typo.secondary)
+                mono_font = find_or_add_font(typo.mono)
+                
+                # If fonts were added, update all selects' options
+                if fonts_added:
+                    # Convert list back to dict format for select component
+                    options_dict = {opt.get('value'): opt for opt in self._all_font_opts if opt.get('value')}
+                    self._font_primary_select.options = options_dict
+                    self._font_secondary_select.options = options_dict
+                    self._font_mono_select.options = options_dict
+                    self._font_primary_select.update()
+                    self._font_secondary_select.update()
+                    self._font_mono_select.update()
+                
+                # Set values
+                self._font_primary_select.set_value(primary_font)
+                self._font_secondary_select.set_value(secondary_font)
+                self._font_mono_select.set_value(mono_font)
                 self._font_scale_slider.value = typo.scale
-                # self._font_scale_slider.value = typo.scale # Duplicate line removed
                 self._case_toggle.value = typo.title_case
 
             # 7. Update Layout UI
@@ -351,18 +437,18 @@ class theme_config(ui.column):
             return self._all_font_opts
         return [opt for opt in self._all_font_opts if value.lower() in (opt['value'] or "").lower()]
 
-    def _update_font(self, font_name: str, is_main: bool):
+    def _update_font(self, font_name: str, font_type: str):
         if self._updating: return
         if not self.manager.theme or not font_name:
             return
             
-        # UI doesn't inject CSS anymore, Bridge handles "loading" fonts? 
         # Bridge loads ALL fonts at init. So we just set the value.
-            
-        if is_main:
+        if font_type == 'primary':
             self.manager.theme.typography.primary = font_name
-        else:
+        elif font_type == 'secondary':
             self.manager.theme.typography.secondary = font_name
+        elif font_type == 'mono':
+            self.manager.theme.typography.mono = font_name
             
         self.manager.refresh()
 

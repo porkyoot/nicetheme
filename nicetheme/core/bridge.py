@@ -198,6 +198,7 @@ class ThemeBridge:
                 typo = manager.theme.typography
                 css_vars["--nt-font-primary"] = f"'{typo.primary}'"
                 css_vars["--nt-font-secondary"] = f"'{typo.secondary}'"
+                css_vars["--nt-font-mono"] = f"'{typo.mono}'"
                 css_vars["--nt-font-scale"] = str(typo.scale)
                 
                 transform_map = {
