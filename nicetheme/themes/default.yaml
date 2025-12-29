@@ -1,6 +1,6 @@
 palette: tailwind
 layout: paper
-texture: paper
+texture: material
 typography:
     primary: recursive
     secondary: recursive

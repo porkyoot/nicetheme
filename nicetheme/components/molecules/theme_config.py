@@ -82,8 +82,10 @@ class theme_config(ui.column):
             for name, palette_set in self.registry.palettes.items():
                  # Use light mode palette for the icon preview
                  icon_palette = palette_set.get('light') or next(iter(palette_set.values()))
+                 # Normalize name to Title Case
+                 label = name.replace('_', ' ').title()
                  palette_options.append({
-                     'label': name.title(), 
+                     'label': label, 
                      'html': palette_icon.to_html(icon_palette, size="24px"),
                      'value': name
                  })
@@ -135,7 +137,15 @@ class theme_config(ui.column):
                 with ui.tab_panel('Texture').classes('gap-4 column'):
                     # Row 1: Texture Select
                     with ui.row().classes('w-full items-center justify-between'):
-                        texture_options = list(self.registry.textures.keys()) if self.registry else []
+                        texture_options = []
+                        if self.registry:
+                            for name in self.registry.textures:
+                                texture_options.append({
+                                    'label': name.replace('_', ' ').title(),
+                                    'value': name,
+                                    'icon': 'texture'
+                                })
+                        
                         self._texture_select = select(
                             texture_options, 
                             label='Base Texture', 
@@ -212,6 +222,23 @@ class theme_config(ui.column):
                         )
 
                 with ui.tab_panel('Layout').classes('gap-4 column'):
+                    # Row 0: Layout Select
+                    with ui.row().classes('w-full items-center justify-between'):
+                        layout_options = []
+                        if self.registry:
+                            for name in self.registry.layouts:
+                                layout_options.append({
+                                    'label': name.replace('_', ' ').title(),
+                                    'value': name,
+                                    'icon': 'view_quilt'
+                                })
+                        
+                        self._layout_select = select(
+                            layout_options,
+                            label='Base Layout',
+                            on_change=self._handle_layout_change
+                        ).classes('w-full')
+
                     # Row 1: Border & Roundness
                     with ui.row().classes('w-full gap-4'):
                         # Border
@@ -264,22 +291,9 @@ class theme_config(ui.column):
             # 5. Update Texture UI
             if self.manager.theme and self.manager.theme.texture:
                 tex = self.manager.theme.texture
+                self._texture_select.value = self.manager.theme.texture_name
                 
-                # Sync texture select dropdown - find matching registered texture
-                current_texture_name = None
-                for name, registered_tex in self.registry.textures.items():
-                    # Check if this is the same texture object or has matching properties
-                    if registered_tex is tex or (
-                        registered_tex.shadow_intensity == tex.shadow_intensity and
-                        registered_tex.highlight_intensity == tex.highlight_intensity and
-                        registered_tex.blur == tex.blur and
-                        registered_tex.opacity == tex.opacity
-                    ):
-                        current_texture_name = name
-                        break
-                
-                if current_texture_name:
-                    self._texture_select.value = current_texture_name
+                # Update texture sliders
                 
                 # Update texture sliders
                 self._shadow_highlight_slider.slider_left.value = tex.shadow_intensity
@@ -360,6 +374,8 @@ class theme_config(ui.column):
             # 7. Update Layout UI
             if self.manager.theme and self.manager.theme.layout:
                 layout = self.manager.theme.layout
+                self._layout_select.value = self.manager.theme.layout_name
+
                 self._border_slider.value = layout.border
                 self._roundness_slider.value = layout.roundness
                 self._density_slider.value = layout.density
@@ -392,6 +408,7 @@ class theme_config(ui.column):
         texture = self.registry.textures.get(e.value)
         if texture and self.manager.theme:
             self.manager.theme.texture = texture
+            self.manager.theme.texture_name = e.value
             self.manager.refresh()
 
     def _update_shadow_highlight(self, values: dict):
@@ -430,6 +447,14 @@ class theme_config(ui.column):
         if self._updating: return
         if self.manager.theme and self.manager.theme.layout:
             self.manager.theme.layout.density = e.value
+            self.manager.refresh()
+
+    def _handle_layout_change(self, e):
+        if self._updating: return
+        layout = self.registry.layouts.get(e.value)
+        if layout and self.manager.theme:
+            self.manager.theme.layout = layout
+            self.manager.theme.layout_name = e.value
             self.manager.refresh()
 
     def _filter_fonts(self, value: str):

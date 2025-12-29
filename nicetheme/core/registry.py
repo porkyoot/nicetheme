@@ -137,7 +137,9 @@ class ThemeRegistry:
                     # Create theme with resolved components
                     theme = Theme(
                         palette=data.get('palette', 'tailwind'),
+                        texture_name=texture_name or 'default',
                         texture=texture,
+                        layout_name=layout_name or 'default',
                         layout=layout,
                         typography=Typography(**data.get('typography', {
                             'primary': 'sans-serif',
@@ -148,5 +150,8 @@ class ThemeRegistry:
                         }))
                     )
                     self.themes[file.stem] = theme
+                    print(f"Registered theme: {file.stem}")
             except Exception as e:
                 print(f"Error loading theme {file.name}: {e}")
+                import traceback
+                traceback.print_exc()

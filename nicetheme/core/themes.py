@@ -80,6 +80,8 @@ class Typography:
 @dataclass
 class Theme:
     palette: str  # Name of the palette to use
+    texture_name: str
     texture: Texture
+    layout_name: str
     layout: Layout
     typography: Typography

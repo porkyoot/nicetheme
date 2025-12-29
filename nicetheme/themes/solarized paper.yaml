@@ -1,6 +1,6 @@
 palette: solarized
 layout: paper
-texture: paper
+texture: material
 typography:
     primary: Quicksand
     secondary: Recursive

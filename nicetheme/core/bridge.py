@@ -24,6 +24,12 @@ class ThemeBridge:
         self._inject_static_styles()
         self._inject_google_fonts()
         self._inject_local_fonts()
+        
+        # Inject browser color scheme detection
+        self._inject_color_scheme_detection()
+        
+        # Inject persistence logic (localStorage)
+        self._inject_persistence_logic()
 
         # Initial Variable Injection (SSR friendly)
         if self.manager.theme:
@@ -92,6 +98,28 @@ class ThemeBridge:
             document.body.classList.add('body--light');
             document.querySelector('#app').classList.remove('q-dark');
         }}
+
+        // Persistence: Save current state to localStorage
+        const prefs = {{
+            mode: {json.dumps(manager.mode)},
+            palette: {json.dumps(manager.active_palette_name)},
+            texture: {json.dumps(theme.texture_name)},
+            layout: {json.dumps(theme.layout_name)},
+            typography: {{
+                primary: {json.dumps(theme.typography.primary)},
+                secondary: {json.dumps(theme.typography.secondary)},
+                mono: {json.dumps(theme.typography.mono)},
+                scale: {theme.typography.scale},
+                title_case: {json.dumps(theme.typography.title_case)}
+            }}
+        }};
+        
+        // Add palette overrides
+        const p_primary = {json.dumps(palette.primary)};
+        const p_secondary = {json.dumps(palette.secondary)};
+        prefs.palette_overrides = {{ primary: p_primary, secondary: p_secondary }};
+
+        localStorage.setItem('nt_prefs_' + {json.dumps(manager.theme_name)}, JSON.stringify(prefs));
         """
         try:
             ui.run_javascript(js_cmd)
@@ -256,6 +284,90 @@ class ThemeBridge:
         
         if css_rules:
             ui.add_head_html(f"<style>{''.join(css_rules)}</style>")
+    
+    def _inject_color_scheme_detection(self):
+        """Injects JavaScript to detect browser color scheme preference using prefers-color-scheme media query."""
+        detection_script = """
+        <script>
+        (function() {
+            // Detect color scheme preference using media query
+            const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            
+            function detectAndStoreColorScheme() {
+                const isDark = mediaQuery.matches;
+                const mode = isDark ? 'dark' : 'light';
+                
+                // Store in localStorage for persistence
+                localStorage.setItem('nt_detected_color_scheme', mode);
+                
+                // Also store as a custom property on the document for easy access
+                document.documentElement.setAttribute('data-detected-color-scheme', mode);
+            }
+            
+            // Detect initial preference immediately
+            detectAndStoreColorScheme();
+            
+            // Listen for changes (e.g., user changes system preference)
+            if (mediaQuery.addEventListener) {
+                mediaQuery.addEventListener('change', function() {
+                    detectAndStoreColorScheme();
+                    // Trigger a page refresh to apply the new theme
+                    window.location.reload();
+                });
+            } else {
+                // Fallback for older browsers
+                mediaQuery.addListener(function() {
+                    detectAndStoreColorScheme();
+                    window.location.reload();
+                });
+            }
+        })();
+        </script>
+        """
+        ui.add_head_html(detection_script)
+        
+        # After detection script is loaded, read the detected value and set it
+        # This will run on the server side during initialization
+        read_detection_script = """
+        const detectedMode = localStorage.getItem('nt_detected_color_scheme') || 
+                           (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        return detectedMode;
+        """
+        
+        # Try to read the detected mode and set it in the manager
+        # This needs to be done after the client connects
+        def set_initial_detected_mode():
+            try:
+                detected = ui.run_javascript(read_detection_script, timeout=1.0)
+                if detected and detected in ['light', 'dark']:
+                    self.manager.set_detected_mode(detected)
+            except:
+                # If we can't read it (e.g., during SSR), default to light
+                self.manager.set_detected_mode('light')
+        
+        # Schedule this to run when a client connects
+        ui.timer(0.1, set_initial_detected_mode, once=True)
+
+    def _inject_persistence_logic(self):
+        """Injects logic to read from localStorage on startup and apply to manager."""
+        import json
+        
+        read_prefs_script = f"""
+        return localStorage.getItem('nt_prefs_' + {json.dumps(self.manager.theme_name)});
+        """
+        
+        async def load_persisted_prefs():
+            try:
+                prefs_json = await ui.run_javascript(read_prefs_script, timeout=1.0)
+                if prefs_json:
+                    prefs = json.loads(prefs_json)
+                    # Use a specialized method in manager to apply all at once
+                    self.manager.apply_preferences(prefs)
+            except Exception as e:
+                print(f"Error loading persisted prefs: {e}")
+        
+        # Schedule to run once on client connection
+        ui.timer(0.2, load_persisted_prefs, once=True)
 
     def _inject_texture_css(self, texture: Texture):
         """Generates and injects component-specific texture CSS on initial load."""
@@ -286,7 +398,7 @@ class ThemeBridge:
     
     def _generate_texture_css(self, texture: Texture) -> str:
         """Generates CSS rules from component-specific texture properties."""
-        rules = []
+        rules: List[str] = []
         
         # Component type to CSS selectors mapping
         selectors = {

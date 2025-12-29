@@ -1,9 +1,0 @@
-palette: solarized
-layout: relaxed
-texture: flat
-typography:
-    primary: Recursive
-    secondary: Recursive
-    mono: Recursive
-    scale: 1.0
-    title_case: title_case

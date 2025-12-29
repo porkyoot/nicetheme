@@ -69,7 +69,7 @@ class select(ui.select):
         ''')
 
         self.add_slot('selected-item', r'''
-            <div class="row items-center no-wrap gap-2" v-if="props.opt && props.opt.label">
+            <div class="row items-center no-wrap gap-2" v-if="props.opt && props.opt.label" style="pointer-events: none">
                 <div v-if="props.opt.label.html" v-html="props.opt.label.html"></div>
                 <q-icon v-else-if="props.opt.label.icon" :name="props.opt.label.icon" :color="props.opt.label.color" size="sm" />
                 <q-item-label :style="props.opt.label.font ? { 'font-family': props.opt.label.font } : {}">

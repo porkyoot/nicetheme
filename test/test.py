@@ -13,11 +13,9 @@ from nicetheme.components.atoms.select import select
 from nicetheme.components.atoms.icon import palette_icon
 from nicetheme.components.molecules.theme_config import theme_config
 
-# Initialize Manager (which internally creates its own registry and loads default.yaml)
+# Initialize Manager (internally creates its own registry and loads default.yaml)
 manager = ThemeManager()
-
-# Create our own registry for components that need direct access
-registry = ThemeRegistry(None)
+registry = manager._registry
 
 # Initialize ThemeBridge to sync the theme to the UI
 bridge = ThemeBridge(manager, registry)
@@ -28,9 +26,26 @@ with ui.column().classes('w-full items-center p-8 gap-8 min-h-screen'):
     
     ui.label('NiceTheme Atomic Elements').classes('text-4xl font-bold mb-8')
 
-    # Theme Config
+    # Theme Selector & Config
     with ui.card().classes('w-full max-w-6xl p-6'):
-        ui.label('Theme Config').classes('text-2xl font-semibold mb-4')
+        with ui.row().classes('w-full items-center justify-between mb-4'):
+            ui.label('Theme Configuration').classes('text-2xl font-semibold')
+            
+            # Global Theme Selector
+            theme_names = list(registry.themes.keys())
+            theme_mapping = {name: name.replace('_', ' ').title() for name in theme_names}
+            
+            print(f"DEBUG: theme_names={theme_names}")
+            print(f"DEBUG: theme_mapping={theme_mapping}")
+            print(f"DEBUG: manager.theme_name={manager.theme_name}")
+
+            ui.select(
+                theme_mapping, 
+                value=manager.theme_name,
+                on_change=lambda e: manager.select_theme(e.value)
+            ).classes('w-64').props('rounded outlined dense')
+
+
         theme_config(manager=manager, registry=registry)
 
     # Typography
@@ -92,7 +107,7 @@ with ui.column().classes('w-full items-center p-8 gap-8 min-h-screen'):
             ui.time(value='12:00').props('flat bordered')
             with ui.column().classes('gap-2'):
                 ui.label('Color Picker')
-                ui.color_picker(on_pick=lambda e: color_label.set_style(f'color: {e.color}'))
+                ui.color_picker(on_pick=lambda e: color_label.style(f'color: {e.color}'))
                 color_label = ui.label('Pick a color!').classes('font-bold text-xl')
 
     # Buttons
