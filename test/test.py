@@ -34,10 +34,6 @@ with ui.column().classes('w-full items-center p-8 gap-8 min-h-screen'):
             # Global Theme Selector
             theme_names = list(registry.themes.keys())
             theme_mapping = {name: name.replace('_', ' ').title() for name in theme_names}
-            
-            print(f"DEBUG: theme_names={theme_names}")
-            print(f"DEBUG: theme_mapping={theme_mapping}")
-            print(f"DEBUG: manager.theme_name={manager.theme_name}")
 
             ui.select(
                 theme_mapping, 

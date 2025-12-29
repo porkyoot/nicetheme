@@ -363,8 +363,8 @@ class ThemeBridge:
                     prefs = json.loads(prefs_json)
                     # Use a specialized method in manager to apply all at once
                     self.manager.apply_preferences(prefs)
-            except Exception as e:
-                print(f"Error loading persisted prefs: {e}")
+            except Exception:
+                pass
         
         # Schedule to run once on client connection
         ui.timer(0.2, load_persisted_prefs, once=True)

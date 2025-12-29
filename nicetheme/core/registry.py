@@ -28,7 +28,6 @@ class ThemeRegistry:
     def scan(self):
         """Scans the themes directory for components."""
         if not self.themes_dir.exists():
-            print(f"Theme directory {self.themes_dir} does not exist.")
             return
 
         self._scan_palettes(self.themes_dir / "palettes")
@@ -76,8 +75,8 @@ class ThemeRegistry:
                         'light': light_palette,
                         'dark': dark_palette
                     }
-            except Exception as e:
-                print(f"Error loading palette {file.name}: {e}")
+            except Exception:
+                pass
 
     def _scan_textures(self, path: Path):
         if not path.exists(): return
@@ -86,8 +85,8 @@ class ThemeRegistry:
                 with open(file, "r") as f:
                     data = yaml.safe_load(f)
                     self.textures[file.stem] = Texture(**data)
-            except Exception as e:
-                print(f"Error loading texture {file.name}: {e}")
+            except Exception:
+                pass
 
     def _scan_layouts(self, path: Path):
         if not path.exists(): return
@@ -96,8 +95,8 @@ class ThemeRegistry:
                 with open(file, "r") as f:
                     data = yaml.safe_load(f)
                     self.layouts[file.stem] = Layout(**data)
-            except Exception as e:
-                print(f"Error loading layout {file.name}: {e}")
+            except Exception:
+                pass
 
     def _scan_fonts(self, path: Path):
         if not path.exists(): return
@@ -150,8 +149,5 @@ class ThemeRegistry:
                         }))
                     )
                     self.themes[file.stem] = theme
-                    print(f"Registered theme: {file.stem}")
-            except Exception as e:
-                print(f"Error loading theme {file.name}: {e}")
-                import traceback
-                traceback.print_exc()
+            except Exception:
+                pass

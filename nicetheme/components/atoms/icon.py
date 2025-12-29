@@ -63,9 +63,7 @@ class palette_icon(ui.element):
             try:
                 color = colors.get(color_name, '#888888')
             except AttributeError:
-                # Debugging: colors might not be a dict
-                # We don't have the palette name here easily, but we can see the type
-                print(f"CRITICAL ERROR in palette_icon: colors is {type(colors)} not dict. Value: {repr(colors)}")
+                # Fallback if colors is not a dict
                 color = '#888888'
             
             # Calculate start and end angles (in degrees, starting from top)
