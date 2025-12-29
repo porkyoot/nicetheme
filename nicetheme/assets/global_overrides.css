@@ -138,13 +138,153 @@ h6,
 }
 
 /* Borders */
-/* Apply to bordered variants */
+/* Generic Utility Overrides for theme consistency */
+.border,
+.border-t,
+.border-b,
+.border-l,
+.border-r,
 .q-card--bordered,
 .q-btn--outline,
 .q-btn--bordered,
-.q-field--outlined .q-field__control {
-    border-width: calc(var(--nt-border-width, 1) * 1px) !important;
+.q-field--outlined .q-field__control,
+.q-table__container,
+.q-table__bottom,
+.q-stepper--bordered,
+.q-expansion-item--bordered {
+    border-width: 0;
+    /* Clear default */
+    border-style: solid;
     border-color: var(--nt-border-color) !important;
+}
+
+.border,
+.q-card--bordered,
+.q-btn--outline,
+.q-btn--bordered,
+.q-field--outlined .q-field__control,
+.q-table__container,
+.q-stepper--bordered,
+.q-expansion-item--bordered {
+    border-width: calc(var(--nt-border-width, 1) * 1px) !important;
+}
+
+.border-t {
+    border-top-width: calc(var(--nt-border-width, 1) * 1px) !important;
+}
+
+.border-b {
+    border-bottom-width: calc(var(--nt-border-width, 1) * 1px) !important;
+}
+
+.border-l {
+    border-left-width: calc(var(--nt-border-width, 1) * 1px) !important;
+}
+
+.border-r {
+    border-right-width: calc(var(--nt-border-width, 1) * 1px) !important;
+}
+
+/* Special case: Separators */
+.q-separator,
+.q-field--standard .q-field__control:before {
+    background-color: var(--nt-border-color) !important;
+    height: calc(var(--nt-border-width, 1) * 1px) !important;
+    border: none !important;
+}
+
+/* Vertical Separator */
+.q-separator--vertical {
+    width: calc(var(--nt-border-width, 1) * 1px) !important;
+    height: auto !important;
+}
+
+/* Splitters */
+/* The separator itself should be thin, but we'll add a generous ::before pseudo-element for the drag area */
+.q-splitter__separator {
+    position: relative !important;
+    background-color: transparent !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: visible !important;
+}
+
+.q-splitter__separator-area {
+    cursor: col-resize !important;
+}
+
+.q-splitter--vertical>.q-splitter__separator .q-splitter__separator-area {
+    cursor: row-resize !important;
+}
+
+/* Generous invisible drag area */
+.q-splitter__separator:before {
+    content: '';
+    position: absolute !important;
+    z-index: 1 !important;
+    pointer-events: auto !important;
+}
+
+/* Visual pill handle */
+.q-splitter__separator:after {
+    content: '';
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    background-color: rgba(var(--nt-content-rgb), 0.2) !important;
+    border-radius: 99px !important;
+    transition: background-color 0.2s, transform 0.2s;
+    pointer-events: none !important;
+    z-index: 2 !important;
+}
+
+.q-splitter__separator:hover:after {
+    background-color: rgba(var(--nt-content-rgb), 0.5) !important;
+    transform: translate(-50%, -50%) scale(1.1) !important;
+}
+
+/* HORIZONTAL splitter = side-by-side panels = VERTICAL separator bar */
+.q-splitter--horizontal>.q-splitter__separator {
+    width: 1px !important;
+    min-width: 1px !important;
+}
+
+/* Drag area for horizontal splitter (vertical bar) */
+.q-splitter--horizontal>.q-splitter__separator:before {
+    width: 24px !important;
+    height: 100% !important;
+    top: 0 !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+}
+
+/* Visual handle for horizontal splitter (vertical pill) */
+.q-splitter--horizontal>.q-splitter__separator:after {
+    width: 4px !important;
+    height: 48px !important;
+}
+
+/* VERTICAL splitter = stacked panels = HORIZONTAL separator bar */
+.q-splitter--vertical>.q-splitter__separator {
+    height: 1px !important;
+    min-height: 1px !important;
+}
+
+/* Drag area for vertical splitter (horizontal bar) */
+.q-splitter--vertical>.q-splitter__separator:before {
+    width: 100% !important;
+    height: 24px !important;
+    left: 0 !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+}
+
+/* Visual handle for vertical splitter (horizontal pill) */
+.q-splitter--vertical>.q-splitter__separator:after {
+    height: 4px !important;
+    width: 48px !important;
 }
 
 /* Texture (Surface, Opacity, Blur, Shadows) */
@@ -285,10 +425,7 @@ body.body--dark #app.q-dark {
     --q-color-shadow: rgba(var(--nt-shadow-rgb), 0.2);
 }
 
-/* Standard Field Underline: Use theme border color */
-.q-field--standard .q-field__control:before {
-    border-bottom-color: var(--nt-border-color) !important;
-}
+/* Standard Field Underline: Handled by .q-field--standard rule above */
 
 /* Dropdown Menus: Ensure they use the theme shadow color and correct surface depth */
 /* Default Quasar menu shadow might be black; force theme RGB */

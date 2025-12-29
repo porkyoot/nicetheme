@@ -2,7 +2,7 @@ shadow_intensity: 0.0
 highlight_intensity: 0.0
 opacity: 1.0
 blur: 0
-button: ""
+button: "box-shadow: none !important;"
 card: ""
 progress: ""
 slider: ""

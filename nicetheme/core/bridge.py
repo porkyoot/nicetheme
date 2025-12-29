@@ -406,7 +406,7 @@ class ThemeBridge:
             'card': '.q-card, .nicegui-card',
             'progress': '.q-linear-progress, .q-circular-progress',
             'slider': '.q-slider, .palette-slider',
-            'toggle': '.q-toggle, .q-checkbox, .q-radio',
+            'toggle': '.q-toggle, .q-checkbox, .q-radio, .q-btn-group',
             'chip': '.q-chip, .q-badge',
             'menu': '.q-menu, .q-tooltip, .q-notification'
         }
