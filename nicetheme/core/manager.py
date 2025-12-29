@@ -1,5 +1,6 @@
 from typing import Callable, List, Literal, Optional
 from .themes import Theme, Palette
+from .registry import ThemeRegistry
 
 class ThemeManager:
     """
@@ -7,9 +8,10 @@ class ThemeManager:
     Does NOT know about HTML, CSS injection, or the browser.
     """
     def __init__(self):
-        self._theme: Optional[Theme] = None
+        self._registry = ThemeRegistry(themes_dir=None)  # Use default themes directory
+        self._theme: Optional[Theme] = self._registry.themes.get('default')
         self._active_palette_name: str = 'solarized'
-        self._mode: Literal['light', 'dark', 'auto'] = 'light'
+        self._mode: Literal['light', 'dark', 'auto'] = 'auto'  # Default to auto (browser detect)
         self._listeners: List[Callable[['ThemeManager'], None]] = []
 
     def bind(self, callback: Callable[['ThemeManager'], None]):
@@ -66,12 +68,15 @@ class ThemeManager:
 
     def get_active_palette(self) -> Optional[Palette]:
         if not self._theme: return None
-        palettes = self._theme.palettes.get(self._active_palette_name)
+        # Get the palette name from the theme
+        palette_name = self._theme.palette
+        # Get the palette from the registry
+        palettes = self._registry.palettes.get(palette_name)
         if not palettes: return None
         return palettes.get(self.get_effective_mode())
     
     @property
-    def theme(self) -> Optional[Theme]:
+    def theme(self) -> Theme:
         return self._theme
 
     @property

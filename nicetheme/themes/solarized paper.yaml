@@ -1,8 +1,7 @@
-theme:
-  palette: solarized
-  layout: paper
-  texture: paper
-  typography:
+palette: solarized
+layout: paper
+texture: paper
+typography:
     primary: Quicksand
     secondary: Recursive
     mono: Recursive

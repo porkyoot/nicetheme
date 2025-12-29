@@ -1,8 +1,7 @@
-theme:
-  palette: metro
-  layout: metro
-  texture: flat
-  typography:
+palette: metro
+layout: metro
+texture: flat
+typography:
     primary: Inter
     secondary: Inter
     mono: Inconsolata

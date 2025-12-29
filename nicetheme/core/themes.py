@@ -79,12 +79,7 @@ class Typography:
 
 @dataclass
 class Theme:
-    palettes: Dict[str, Dict[str, Palette]]
+    palette: str  # Name of the palette to use
     texture: Texture
     layout: Layout
     typography: Typography
-
-    def get_palette(self, name: str, mode: str) -> Optional[Palette]:
-        palette_set = self.palettes.get(name)
-        if not palette_set: return None
-        return palette_set.get(mode)

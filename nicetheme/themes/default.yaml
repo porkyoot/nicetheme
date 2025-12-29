@@ -1,8 +1,7 @@
-theme:
-  palette: tailwind
-  layout: paper
-  texture: paper
-  typography:
+palette: tailwind
+layout: paper
+texture: paper
+typography:
     primary: recursive
     secondary: recursive
     mono: recursive

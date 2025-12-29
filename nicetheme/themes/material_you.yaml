@@ -1,8 +1,7 @@
-theme:
-  palette: material
-  layout: material
-  texture: material
-  typography:
+palette: material
+layout: material
+texture: material
+typography:
     primary: Roboto
     secondary: Roboto Mono
     mono: Roboto Mono

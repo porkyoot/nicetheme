@@ -1,8 +1,7 @@
-theme:
-  palette: solarized
-  layout: relaxed
-  texture: glossy
-  typography:
+palette: solarized
+layout: relaxed
+texture: glossy
+typography:
     primary: Merriweather
     secondary: Roboto
     mono: Roboto Mono

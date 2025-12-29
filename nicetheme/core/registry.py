@@ -3,7 +3,7 @@ import yaml
 from typing import Dict, Optional
 from pathlib import Path
 from nicegui import app
-from .themes import Palette, Texture, Layout, Typography
+from .themes import Palette, Texture, Layout, Theme, Typography
 
 class ThemeRegistry:
     """
@@ -21,6 +21,7 @@ class ThemeRegistry:
         self.layouts: Dict[str, Layout] = {}
         self.fonts: Dict[str, str] = {} # Name -> Relative Path or URL
         self.font_files: Dict[str, Path] = {} # Name -> Absolute Path
+        self.themes: Dict[str, Theme] = {}
 
         self.scan()
 
@@ -34,6 +35,8 @@ class ThemeRegistry:
         self._scan_textures(self.themes_dir / "textures")
         self._scan_layouts(self.themes_dir / "layouts")
         self._scan_fonts(self.themes_dir / "fonts")
+
+        self._scan_themes(self.themes_dir)
 
     def _scan_palettes(self, path: Path):
         if not path.exists(): return
@@ -108,3 +111,42 @@ class ThemeRegistry:
                 # Assuming the user wants to reference them by filename stem
                 self.fonts[file.stem] = f"/fonts/{file.name}"
                 self.font_files[file.stem] = file
+
+    def _scan_themes(self, path: Path):
+        if not path.exists(): return
+        for file in path.glob("*.yaml"):
+            try:
+                with open(file, "r") as f:
+                    data = yaml.safe_load(f)
+                    
+                    # Resolve texture and layout references
+                    texture_name = data.get('texture')
+                    layout_name = data.get('layout')
+                    
+                    # Ensure texture and layout are never None
+                    default_texture = Texture(
+                        shadow_intensity=0.2, highlight_intensity=0.1, opacity=1.0, blur=0
+                    )
+                    default_layout = Layout(
+                        roundness=0.5, density=0.5, border=1.0
+                    )
+                    
+                    texture = self.textures.get(texture_name, default_texture) if texture_name else default_texture
+                    layout = self.layouts.get(layout_name, default_layout) if layout_name else default_layout
+                    
+                    # Create theme with resolved components
+                    theme = Theme(
+                        palette=data.get('palette', 'tailwind'),
+                        texture=texture,
+                        layout=layout,
+                        typography=Typography(**data.get('typography', {
+                            'primary': 'sans-serif',
+                            'secondary': 'sans-serif',
+                            'mono': 'monospace',
+                            'scale': 1.0,
+                            'title_case': 'none'
+                        }))
+                    )
+                    self.themes[file.stem] = theme
+            except Exception as e:
+                print(f"Error loading theme {file.name}: {e}")

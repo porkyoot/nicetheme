@@ -13,62 +13,14 @@ from nicetheme.components.atoms.select import select
 from nicetheme.components.atoms.icon import palette_icon
 from nicetheme.components.molecules.theme_config import theme_config
 
-# Initialize Registry and Manager
-registry = ThemeRegistry(None)
+# Initialize Manager (which internally creates its own registry and loads default.yaml)
 manager = ThemeManager()
+
+# Create our own registry for components that need direct access
+registry = ThemeRegistry(None)
+
+# Initialize ThemeBridge to sync the theme to the UI
 bridge = ThemeBridge(manager, registry)
-
-# Setup Defaults if Registry is empty or to ensure we have a valid theme
-def get_default_theme() -> Theme:
-    # Palette
-    if registry.palettes:
-        palettes = registry.palettes
-        # Ensure manager has a valid active palette name
-        default_name = 'solarized' if 'solarized' in registry.palettes else next(iter(registry.palettes.keys()))
-        manager.set_palette(default_name)
-    else:
-        # Fallback manual creation
-        print("Warning: No palettes in registry, using default fallback.")
-        light_palette = Palette(
-            name="default", mode="light",
-            primary="#007bff", secondary="#6c757d",
-            positive="#28a745", negative="#dc3545", warning="#ffc107", info="#17a2b8", debug="#f8f9fa",
-            inative="#adb5bd", colors={},
-            greys={},
-            content=["#000000", "#333333"], surface=["#ffffff", "#f8f9fa"],
-            shadow="#000000", highlight="#ffffff", border="#e0e0e0"
-        )
-        dark_palette = Palette(
-            name="default", mode="dark",
-            primary="#007bff", secondary="#6c757d",
-            positive="#28a745", negative="#dc3545", warning="#ffc107", info="#17a2b8", debug="#f8f9fa",
-            inative="#adb5bd", colors={},
-            greys={},
-            content=["#ffffff", "#e0e0e0"], surface=["#121212", "#1e1e1e"],
-            shadow="#000000", highlight="#333333", border="#444444"
-        )
-        palettes = {'default': {'light': light_palette, 'dark': dark_palette}}
-        manager.set_palette('default')
-
-    # Texture
-    if registry.textures:
-        texture = registry.textures.get('frosted_glass') or next(iter(registry.textures.values()))
-    else:
-        texture = Texture(shadow_intensity=0.1, highlight_intensity=0.2, opacity=1.0, blur=10, css="")
-
-    # Layout
-    if registry.layouts:
-        layout = registry.layouts.get('relaxed') or next(iter(registry.layouts.values()))
-    else:
-        layout = Layout(roundness=4.0, density=1.0, border=1.0)
-
-    # Typography (Manual as it's not scanned fully)
-    typography = Typography(primary="Roboto", secondary="sans-serif", mono="Courier New", scale=1.0, title_case="title_case")
-
-    return Theme(palettes=palettes, texture=texture, layout=layout, typography=typography)
-
-theme = get_default_theme()
-manager.apply_theme(theme)
 
 # UI Showcase
 # UI Showcase
