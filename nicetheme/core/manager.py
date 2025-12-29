@@ -76,7 +76,7 @@ class ThemeManager:
         return palettes.get(self.get_effective_mode())
     
     @property
-    def theme(self) -> Theme:
+    def theme(self) -> Optional[Theme]:
         return self._theme
 
     @property

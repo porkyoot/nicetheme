@@ -95,7 +95,7 @@ class theme_config(ui.column):
                 tab('Typography', icon='text_fields')
                 tab('Layout', icon='view_quilt')
                 
-            with ui.tab_panels(tabs, value='Palette').classes('w-full bg-transparent'):
+            with ui.tab_panels(tabs, value='Palette').classes('w-full max-w-lg bg-transparent'):
                 with ui.tab_panel('Palette').classes('gap-4 column'):
                     
                     # Row 1: Mode Toggle & Palette Select
@@ -174,7 +174,7 @@ class theme_config(ui.column):
                                 label='Primary Font',
                                 on_change=lambda e: self._update_font(e.value, font_type='primary'),
                                 on_filter=self._filter_fonts
-                            ).classes('flex-1')
+                            ).classes('w-48')
                             
                             # Text Case Toggle
                             with ui.column().classes('gap-1'):
@@ -194,14 +194,14 @@ class theme_config(ui.column):
                                 label='Secondary Font',
                                 on_change=lambda e: self._update_font(e.value, font_type='secondary'),
                                 on_filter=self._filter_fonts
-                            ).classes('flex-1')
+                            ).classes('w-48')
 
                             self._font_mono_select = select(
                                 options=self._all_font_opts,
                                 label='Mono Font',
                                 on_change=lambda e: self._update_font(e.value, font_type='mono'),
                                 on_filter=self._filter_fonts
-                            ).classes('flex-1')
+                            ).classes('w-48')
 
                     # Font Scale
                     with ui.column().classes('w-full gap-1'):
