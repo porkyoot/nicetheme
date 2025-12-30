@@ -10,6 +10,7 @@ from .select import select
 from .slider import slider
 from .tab import tab
 from .toggle import toggle
+from .dangerous_button import DangerousButton as dangerous_button
 
 __all__ = [
     'button',
@@ -19,4 +20,5 @@ __all__ = [
     'slider',
     'tab',
     'toggle',
+    'dangerous_button',
 ]

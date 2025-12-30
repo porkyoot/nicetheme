@@ -72,6 +72,10 @@ class ThemeBridge:
         # self.sync calls ui.colors which updates layout props
         # We might need to run self.sync(self.manager) but ensure it targets THIS client
         # ui.colors uses the current client context, so it should be fine.
+        # Sync current state to this client immediately (Quasar colors etc)
+        # self.sync calls ui.colors which updates layout props
+        # We might need to run self.sync(self.manager) but ensure it targets THIS client
+        # ui.colors uses the current client context, so it should be fine.
         self.sync(self.manager)
         pass
 

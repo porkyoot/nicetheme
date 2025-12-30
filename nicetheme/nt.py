@@ -39,10 +39,12 @@ from .components.atoms import (
     slider,
     tab,
     toggle,
+    dangerous_button,
 )
 
 # Import molecular components
-from .components.molecules import theme_config
+from .components.molecules import theme_config, histogram, header
+from .components.organisms import terminal
 
 # Import core utilities (for convenience)
 from .core import ThemeManager, ThemeBridge, ThemeRegistry
@@ -51,6 +53,7 @@ __all__ = [
     # Atomic components
     'button',
     'select_button',
+    'dangerous_button',
     'icon',
     'palette_icon',
     'select',
@@ -59,6 +62,10 @@ __all__ = [
     'toggle',
     # Molecular components
     'theme_config',
+    'histogram',
+    'header',
+    # Organisms
+    'terminal',
     # Core utilities
     'ThemeManager',
     'ThemeBridge',

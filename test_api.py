@@ -36,6 +36,28 @@ def main_page():
     
     ui.label('All components loaded successfully!').classes('text-green-600 mt-4')
 
+    ui.separator().classes('my-4')
+    
+    ui.label('New Migrated Components').classes('text-xl font-bold mb-4')
+    
+    # Test Header
+    nt.header(title='Section Header', subtitle='Migrated from Sortomatic', icon='settings')
+    
+    # Test Dangerous Button
+    with ui.row().classes('items-center gap-4 py-4'):
+        nt.dangerous_button(icon='delete', on_click=lambda: ui.notify('Boom!'), color='red')
+        ui.label('Hold the button to trigger!')
+        
+    # Test Histogram
+    with ui.row().classes('items-center gap-4 py-4'):
+        nt.histogram([0.1, 0.3, 0.5, 0.9, 0.6, 0.2, 0.8], label='CPU Usage', color='var(--q-primary)')
+        
+    # Test Terminal
+    terminal = nt.terminal(title='System Logs', height='200px')
+    terminal.log('System initialized...', color='#00ff00')
+    terminal.log('Loading components...', color='#ffff00')
+    terminal.log('Error: Coffee not found', color='#ff0000')
+
 # Example 2: Using core utilities
 from nicetheme import ThemeManager, ThemeRegistry
 
