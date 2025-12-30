@@ -1,6 +1,6 @@
 import os
 import yaml
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 from pathlib import Path
 from nicegui import app
 from .themes import Palette, Texture, Layout, Theme, Typography
@@ -10,11 +10,13 @@ class ThemeRegistry:
     Scans and registers theme components (palettes, textures, layouts, fonts) from a directory.
     """
 
-    def __init__(self, themes_dir: Optional[Path] = None):
-        if themes_dir is None:
-            # Default to 'themes' directory within the package if not provided
-            # Assuming this file is in nicetheme/core/registry.py, go up two levels
-            self.themes_dir = Path(__file__).parent.parent / "themes"
+    def __init__(self, themes_dirs: Optional[List[Path]] = None):
+        self.themes_dirs = themes_dirs or []
+        
+        # Always include the internal themes directory
+        internal_themes = Path(__file__).parent.parent / "themes"
+        if internal_themes not in self.themes_dirs:
+            self.themes_dirs.append(internal_themes)
         
         self.palettes: Dict[str, Dict[str, Palette]] = {}
         self.textures: Dict[str, Texture] = {}
@@ -26,16 +28,16 @@ class ThemeRegistry:
         self.scan()
 
     def scan(self):
-        """Scans the themes directory for components."""
-        if not self.themes_dir.exists():
-            return
+        """Scans the themes directories for components."""
+        for path in self.themes_dirs:
+            if not path.exists():
+                continue
 
-        self._scan_palettes(self.themes_dir / "palettes")
-        self._scan_textures(self.themes_dir / "textures")
-        self._scan_layouts(self.themes_dir / "layouts")
-        self._scan_fonts(self.themes_dir / "fonts")
-
-        self._scan_themes(self.themes_dir)
+            self._scan_palettes(path / "palettes")
+            self._scan_textures(path / "textures")
+            self._scan_layouts(path / "layouts")
+            self._scan_fonts(path / "fonts")
+            self._scan_themes(path)
 
     def _scan_palettes(self, path: Path):
         if not path.exists(): return

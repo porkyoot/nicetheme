@@ -7,8 +7,8 @@ class ThemeManager:
     PURE BACKEND: Manages the state of the theme. 
     Does NOT know about HTML, CSS injection, or the browser.
     """
-    def __init__(self):
-        self._registry = ThemeRegistry(themes_dir=None)  # Use default themes directory
+    def __init__(self, themes_dirs: Optional[List] = None):
+        self._registry = ThemeRegistry(themes_dirs=themes_dirs)  # Use provided themes directories
         self._theme_name: str = 'default'
         self._theme: Optional[Theme] = self._registry.themes.get(self._theme_name)
         self._active_palette_name: str = self._theme.palette if self._theme else 'solarized'
