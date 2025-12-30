@@ -21,6 +21,9 @@ dependencies = [
 Homepage = "https://github.com/yourusername/nicetheme"
 Repository = "https://github.com/yourusername/nicetheme"
 
+[tool.setuptools]
+include-package-data = true
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["nicetheme*"]
