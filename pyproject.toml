@@ -24,3 +24,13 @@ Repository = "https://github.com/yourusername/nicetheme"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["nicetheme*"]
+
+[tool.setuptools.package-data]
+nicetheme = [
+    "themes/**/*.yaml",
+    "themes/**/*.ttf",
+    "themes/**/*.otf",
+    "themes/**/*.woff",
+    "themes/**/*.woff2",
+    "assets/*.css",
+]
