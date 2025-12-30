@@ -16,7 +16,8 @@ from nicegui import ui
 from nicetheme import nt
 
 # Example 1: Using nt.button
-with ui.page('/'):
+@ui.page('/')
+def main_page():
     ui.label('NiceTheme API Test').classes('text-2xl font-bold mb-4')
     
     # Test button component
@@ -45,5 +46,5 @@ registry = ThemeRegistry()
 print("✅ NiceTheme API test successful!")
 print(f"Available components: {', '.join([x for x in dir(nt) if not x.startswith('_')])}")
 
-if __name__ == '__main__':
+if __name__ in {"__main__", "__mp_main__"}:
     ui.run()

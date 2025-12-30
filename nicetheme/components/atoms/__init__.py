@@ -11,13 +11,6 @@ from .slider import slider
 from .tab import tab
 from .toggle import toggle
 
-# Try to import icon if it exists as a component class
-try:
-    from .icon import icon
-except ImportError:
-    # If icon is not a class in icon.py, we'll just have palette_icon
-    icon = None
-
 __all__ = [
     'button',
     'select_button',
@@ -27,7 +20,3 @@ __all__ = [
     'tab',
     'toggle',
 ]
-
-# Only add icon to __all__ if it exists
-if icon is not None:
-    __all__.append('icon')

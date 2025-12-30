@@ -10,7 +10,7 @@ class ThemeRegistry:
     Scans and registers theme components (palettes, textures, layouts, fonts) from a directory.
     """
 
-    def __init__(self, themes_dir: Optional[Path]):
+    def __init__(self, themes_dir: Optional[Path] = None):
         if themes_dir is None:
             # Default to 'themes' directory within the package if not provided
             # Assuming this file is in nicetheme/core/registry.py, go up two levels
