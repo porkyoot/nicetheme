@@ -1,4 +1,4 @@
-from nicegui import ui
+from nicegui import ui, app # Added app import
 from typing import List
 import os
 from .manager import ThemeManager
@@ -17,14 +17,25 @@ class ThemeBridge:
         # Subscribe to changes automatically
         self.manager.bind(self.sync)
         
+        # Suppress sync during startup to prevent global UI definition violation
+        self._startup_phase = True
+        
+        # Client Setup via on_connect
+        app.on_connect(self._on_client_connect)
+
+    def _on_client_connect(self, client):
+        """Called for every new client connection."""
+        # Startup phase over, allow syncs
+        self._startup_phase = False
+        
         # FOUC Prevention: Hide body until theme is ready
         self._inject_fouc_prevention()
         
-        # Inject static resources
+        # Inject static resources (Global Styles)
         self._inject_static_styles()
         self._inject_google_fonts()
         self._inject_local_fonts()
-        
+
         # Inject browser color scheme detection
         self._inject_color_scheme_detection()
         
@@ -43,6 +54,9 @@ class ThemeBridge:
                 
                 # Check mode
                 mode = self.manager.get_effective_mode()
+                # For on_connect, we can use ui.add_head_html for this client specifically?
+                # Or just run JS?
+                # Actually, add_head_html works per client if called here.
                 if mode == 'dark':
                     ui.add_head_html(f"<style>body.body--dark {{ {vars_block} }}</style>")
                 else:
@@ -54,8 +68,19 @@ class ThemeBridge:
         # Mark theme as ready - reveal body smoothly
         self._mark_theme_ready()
 
+        # Sync current state to this client immediately (Quasar colors etc)
+        # self.sync calls ui.colors which updates layout props
+        # We might need to run self.sync(self.manager) but ensure it targets THIS client
+        # ui.colors uses the current client context, so it should be fine.
+        self.sync(self.manager)
+        pass
+
     def sync(self, manager: ThemeManager):
         """Called whenever the manager notifies of a change."""
+        # Skip sync during startup (e.g. from initial select_theme call)
+        if getattr(self, '_startup_phase', False):
+            return
+
         theme = manager.theme
         if not theme:
             return
