@@ -453,31 +453,24 @@ class ThemeBridge:
     def _inject_fouc_prevention(self):
         """Injects CSS to prevent Flash of Unstyled Content (FOUC)."""
         fouc_css = """
+        @keyframes force-reveal {
+            to { opacity: 1; }
+        }
         body {
             opacity: 0;
             transition: opacity 0.2s ease-in-out;
+            /* Failsafe: Force reveal after 0.5s if JS fails */
+            animation: force-reveal 0.1s forwards 0.5s;
         }
         body.theme-ready {
             opacity: 1;
+            animation: none;
         }
         """
         ui.add_head_html(f"<style>{fouc_css}</style>")
     
     def _mark_theme_ready(self):
         """Marks the theme as ready by adding the theme-ready class to body."""
-        ready_script = """
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            document.body.classList.add('theme-ready');
-        });
-        // Fallback in case DOMContentLoaded already fired
-        if (document.readyState === 'loading') {
-            // Still loading, listener will fire
-        } else {
-            // Already loaded
-            document.body.classList.add('theme-ready');
-        }
-        </script>
-        """
-        ui.add_head_html(ready_script)
+        # Use direct JS execution for reliable update
+        ui.run_javascript("document.body.classList.add('theme-ready');")
 

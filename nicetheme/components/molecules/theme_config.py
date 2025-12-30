@@ -1,4 +1,4 @@
-from nicegui import ui
+from nicegui import ui, Client
 from typing import Optional, List, Dict
 from nicetheme.components.atoms.tab import tab
 from nicetheme.components.atoms.toggle import toggle
@@ -260,8 +260,21 @@ class theme_config(ui.column):
         self.manager.bind(self._update_ui)
         self._update_ui(self.manager)
 
+        # Cleanup on client disconnect to prevent "Client has been deleted" errors
+        if ui.context.client:
+            ui.context.client.on_disconnect(self.dispose)
+
+    def dispose(self):
+        """Unbinds the listener to prevent updates to dead clients."""
+        self.manager.unbind(self._update_ui)
+
     def _update_ui(self, manager: ThemeManager):
         """Updates the UI components based on the manager's current state."""
+        # SELF-CLEANING: Check if this component's client is still alive
+        if self.client.id not in Client.instances:
+            self.dispose()
+            return
+
         if not self.manager.theme:
             return
         
